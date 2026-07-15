@@ -11,7 +11,7 @@ BeforeDiscovery {
     $script:invalidFixtures = @(
         'ribbon.xml', 'sitemap.xml', 'form.xml', 'forms-wrapper.xml', 'fetch.xml',
         'savedquery.xml', 'datadefinition.xml', 'isvconfig.xml', 'parameterxml.xml',
-        'importexport.xml'
+        'viewers.xml', 'importexport.xml'
     )
 }
 

@@ -33,7 +33,7 @@ param(
     [Parameter(Mandatory, Position = 0, ValueFromRemainingArguments)]
     [string[]]$Path,
 
-    # Folder holding the .xsd set. Defaults to the plugin's bundled schemas/9.0.0.2090.
+    # Folder holding the .xsd set. Defaults to schemas/<schemaVersion from versions.json>.
     [string]$SchemaDir,
 
     # Force a specific .xsd filename instead of auto-selecting by root element.
@@ -43,7 +43,8 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if (-not $SchemaDir) {
-    $SchemaDir = Join-Path $PSScriptRoot '..\schemas\9.0.0.2090'
+    $ver = (Get-Content (Join-Path $PSScriptRoot '..' 'versions.json') -Raw | ConvertFrom-Json).schemaVersion
+    $SchemaDir = Join-Path $PSScriptRoot '..' 'schemas' $ver
 }
 if (-not (Test-Path $SchemaDir)) {
     # Console.Error, not Write-Error: under ErrorActionPreference=Stop the latter throws
