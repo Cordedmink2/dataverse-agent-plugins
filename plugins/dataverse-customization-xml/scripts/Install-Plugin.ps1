@@ -55,6 +55,10 @@ if ($LASTEXITCODE -ne 0) { $out | Write-Host; throw "Self-check FAILED: known-go
 $out = & $pwshExe -NoProfile -File $validator (Join-Path $fixtures 'invalid' 'ribbon.xml') 2>&1
 if ($LASTEXITCODE -ne 1) { $out | Write-Host; throw "Self-check FAILED: known-bad fixture was not rejected." }
 
+# The known-bad check above leaves $LASTEXITCODE at 1 by design. Clear it so a dot-sourcing
+# host that propagates it (e.g. CI's `pwsh -command ". script.ps1"`) reads success as success.
+$global:LASTEXITCODE = 0
+
 Write-Host "`nSetup complete - self-check passed." -ForegroundColor Green
 Write-Host "Claude Code: run /reload-plugins (or restart the session)."
 Write-Host "VS Code live validation: install the 'redhat.vscode-xml' extension (re-run with -UpdateVSCode if you skipped it)."
