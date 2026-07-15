@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 — 2026-07-16
+
+- Fix: installer no longer reports failure to CI-style hosts after a successful self-check
+  (leaked exit code from the known-bad fixture probe).
+- Fix: the validator resolves its default schema directory from `versions.json` instead of a
+  hardcoded version, so schema-version bumps apply everywhere.
+- Tests: added the missing invalid `viewers` fixture (36 tests).
+
 ## 1.0.0 — 2026-07-15
 
 First public release.

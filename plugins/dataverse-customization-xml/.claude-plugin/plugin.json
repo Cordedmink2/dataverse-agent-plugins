@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "dataverse-customization-xml",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Schema-validated hand-editing of Dataverse customization XML (ribbon, sitemap, forms, FetchXML, charts and more) against the official XSDs, with lemminx LSP diagnostics and a standalone validator.",
   "author": {
     "name": "Connor Parsons"
