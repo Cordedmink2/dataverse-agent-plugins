@@ -18,7 +18,12 @@
 param(
     # Defaults to the schemaVersion pinned in versions.json.
     [string]$SchemaVersion,
-    [switch]$UpdateVSCode
+    [switch]$UpdateVSCode,
+
+    # Test hook: redirect the VS Code settings.json path so -UpdateVSCode can be exercised
+    # against a scratch file instead of the real user settings.
+    [Parameter(DontShow)]
+    [string]$SettingsPathOverride
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,10 +33,6 @@ if (-not $SchemaVersion) {
     $SchemaVersion = (Get-Content (Join-Path $pluginRoot 'versions.json') -Raw | ConvertFrom-Json).schemaVersion
 }
 $schemaDir = Join-Path $pluginRoot 'schemas' $SchemaVersion
-if (-not (Test-Path (Join-Path $schemaDir 'RibbonCore.xsd'))) {
-    throw "Schemas not found at $schemaDir. Run scripts/Get-Schemas.ps1 first."
-}
-$schemaDirFwd = ((Resolve-Path $schemaDir).Path) -replace '\\', '/'
 
 # pattern -> schema filename. Charts have no association: their <visualization> wrapper root
 # is not declared in the XSD, so whole-file LSP validation would only produce a false error;
@@ -45,6 +46,15 @@ $assoc = [ordered]@{
     '**/*.fetchxml'            = 'Fetch.xsd'
     '**/isv.config.xml'        = 'isv.config.xsd'
 }
+
+# Every XSD about to be stamped must actually exist - a partial extraction or wrong
+# -SchemaVersion would otherwise stamp paths to nonexistent files.
+$missingXsds = @($assoc.Values | Sort-Object -Unique |
+        Where-Object { -not (Test-Path (Join-Path $schemaDir $_)) })
+if ($missingXsds.Count -gt 0) {
+    throw "Missing XSD(s) in ${schemaDir}: $($missingXsds -join ', '). Run scripts/Get-Schemas.ps1 first."
+}
+$schemaDirFwd = ((Resolve-Path $schemaDir).Path) -replace '\\', '/'
 $fileAssociations = @($assoc.GetEnumerator() | ForEach-Object {
         [ordered]@{ pattern = $_.Key; systemId = "$schemaDirFwd/$($_.Value)" }
     })
@@ -75,12 +85,16 @@ Write-Host "Updated $lspPath" -ForegroundColor Green
 
 # --- VS Code user settings.json (optional) ---
 if ($UpdateVSCode) {
-    $userDir = if ($IsWindows) { Join-Path $env:APPDATA 'Code\User' }
-    elseif ($IsMacOS) { "$HOME/Library/Application Support/Code/User" }
-    else { "$HOME/.config/Code/User" }
-    $settingsPath = Join-Path $userDir 'settings.json'
+    if ($SettingsPathOverride) {
+        $settingsPath = $SettingsPathOverride
+    }
+    else {
+        $userDir = if ($IsWindows) { Join-Path $env:APPDATA 'Code\User' }
+        elseif ($IsMacOS) { "$HOME/Library/Application Support/Code/User" }
+        else { "$HOME/.config/Code/User" }
+        $settingsPath = Join-Path $userDir 'settings.json'
+    }
     if (Test-Path $settingsPath) {
-        $s = Get-Content $settingsPath -Raw | ConvertFrom-Json
         # RedHat XML globs have no char classes -> expand [Cc] into two entries.
         $vscodeAssoc = @()
         foreach ($kv in $assoc.GetEnumerator()) {
@@ -90,11 +104,39 @@ if ($UpdateVSCode) {
                 $vscodeAssoc += [ordered]@{ pattern = ($kv.Key -replace '\[Cc\]', 'c'); systemId = "$schemaDirFwd/$($kv.Value)" }
             }
         }
-        $s | Add-Member -NotePropertyName 'xml.fileAssociations' -NotePropertyValue $vscodeAssoc -Force
-        $s | Add-Member -NotePropertyName 'xml.validation.enabled' -NotePropertyValue $true -Force
-        $s | Add-Member -NotePropertyName 'xml.validation.schema.enabled' -NotePropertyValue 'always' -Force
-        $s | ConvertTo-Json -Depth 20 | Set-Content $settingsPath -Encoding UTF8
-        Write-Host "Updated $settingsPath" -ForegroundColor Green
+
+        # ConvertFrom-Json silently accepts JSONC, so rewriting a commented settings.json
+        # would strip every comment with no error. Refuse instead and show what to add.
+        # Comment tokens must follow line-start or whitespace: bare '//' would match URLs
+        # (https://...) and bare '/*' would match the glob patterns this script itself writes
+        # (**/*.xml).
+        $raw = Get-Content $settingsPath -Raw
+        if ($raw -match '(?m)(^|\s)(//|/\*)') {
+            Write-Host "$settingsPath contains comments, which this script cannot preserve; not modified." -ForegroundColor Yellow
+            Write-Host "Add these settings manually:" -ForegroundColor Yellow
+            $manual = [ordered]@{
+                'xml.fileAssociations'          = $vscodeAssoc
+                'xml.validation.enabled'        = $true
+                'xml.validation.schema.enabled' = 'always'
+            }
+            Write-Host ($manual | ConvertTo-Json -Depth 5)
+        }
+        else {
+            $s = $raw | ConvertFrom-Json
+            # Merge by pattern: keep the user's associations for patterns that are not ours
+            # (e.g. their own pom.xml mapping), replace/append ours.
+            $ourPatterns = @($vscodeAssoc | ForEach-Object { $_.pattern })
+            $kept = @()
+            if ($s.PSObject.Properties['xml.fileAssociations']) {
+                $kept = @($s.'xml.fileAssociations' | Where-Object { $_.pattern -notin $ourPatterns })
+            }
+            $s | Add-Member -NotePropertyName 'xml.fileAssociations' -NotePropertyValue ($kept + $vscodeAssoc) -Force
+            $s | Add-Member -NotePropertyName 'xml.validation.enabled' -NotePropertyValue $true -Force
+            $s | Add-Member -NotePropertyName 'xml.validation.schema.enabled' -NotePropertyValue 'always' -Force
+            Copy-Item $settingsPath "$settingsPath.bak" -Force
+            $s | ConvertTo-Json -Depth 20 | Set-Content $settingsPath -Encoding UTF8
+            Write-Host "Updated $settingsPath (backup at $settingsPath.bak)" -ForegroundColor Green
+        }
     }
     else { Write-Host "VS Code settings.json not found at $settingsPath; skipped." -ForegroundColor Yellow }
 }
