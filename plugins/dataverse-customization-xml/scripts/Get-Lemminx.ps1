@@ -6,7 +6,7 @@
 .DESCRIPTION
     The binary is large (~47 MB) and platform-specific, so it is NOT committed to the skills repo.
     Run this once after installing/syncing the plugin on a machine. Auto-detects the current OS/arch
-    and pulls the version pinned in versions.json from the RedHat vscode-xml package on Open VSX —
+    and pulls the version pinned in versions.json from the RedHat vscode-xml package on Open VSX -
     no Java required. Use -Latest to fetch the newest release instead of the pin.
 
     The binary is discovered inside the vsix (extension/server/lemminx-*), verified against the
@@ -109,7 +109,7 @@ try {
     catch { throw "Failed to open the vsix downloaded from $url as a zip archive: $($_.Exception.Message)" }
     try {
         # The binary's name inside the vsix differs by OS/arch, so discover it rather than
-        # hardcode it. Each binary ships with a .sha256 checksum entry — skip those — and the
+        # hardcode it. Each binary ships with a .sha256 checksum entry - skip those - and the
         # truthy $_.Name clause skips directory entries (their Name is empty).
         $entries = @($zip.Entries | Where-Object {
                 $_.FullName -like 'extension/server/lemminx-*' -and

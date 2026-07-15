@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      # The lemminx binary is a ~47 MB download from Open VSX. Get-Lemminx.ps1 skips the
+      # download when bin/.lemminx-version matches the pin in versions.json, so restoring
+      # bin/ from cache makes the setup step a no-op for that part.
+      - name: Cache lemminx binary
+        uses: actions/cache@v4
+        with:
+          path: plugins/dataverse-customization-xml/bin
+          key: lemminx-${{ runner.os }}-${{ hashFiles('plugins/dataverse-customization-xml/versions.json') }}
+
+      - name: End-to-end setup (fetch schemas + lemminx, stamp paths, self-check)
+        run: ./plugins/dataverse-customization-xml/scripts/Install-Plugin.ps1
+
+      - name: Pester tests
+        run: |
+          Install-Module Pester -MinimumVersion 5.5.0 -Force -SkipPublisherCheck
+          Invoke-Pester plugins/dataverse-customization-xml/tests -CI
+
+      - name: PSScriptAnalyzer
+        run: |
+          Install-Module PSScriptAnalyzer -Force
+          $findings = Invoke-ScriptAnalyzer -Path plugins -Recurse -Settings ./PSScriptAnalyzerSettings.psd1
+          $findings | Format-Table -AutoSize
+          if ($findings) { exit 1 }

@@ -53,9 +53,13 @@ if (-not (Test-Path $SchemaDir)) {
 }
 $SchemaDir = (Resolve-Path $SchemaDir).Path
 
+# -Schema forces this xsd for every file. Functions below read this copy: the analyzer's
+# unused-parameter rule only sees same-scope usage, so the parameter itself is consumed here.
+$forcedSchema = $Schema
+
 # Case-sensitive map: ParameterXml's root 'importexportxml' differs from the customizations
 # root 'ImportExportXml' only by case, and PowerShell's @{} literal is case-insensitive.
-$rootToSchema = [System.Collections.Hashtable]::new()
+$rootToSchema = [System.Collections.Generic.Dictionary[string, string]]::new()
 $rootToSchema['ImportExportXml'] = 'CustomizationsSolution.xsd'
 $rootToSchema['importexportxml'] = 'ParameterXml.xsd'
 $rootToSchema['RibbonDiffXml']   = 'RibbonCore.xsd'
@@ -72,7 +76,7 @@ $rootToSchema['viewers']         = 'reports.config.xsd'
 # Wrapper roots: pac wraps the schema's real root in container elements. For these files,
 # each inner fragment (path, relative to the document element) is validated instead.
 # Case-sensitive for the same reason as $rootToSchema.
-$innerElementByRoot = [System.Collections.Hashtable]::new()
+$innerElementByRoot = [System.Collections.Generic.Dictionary[string, string]]::new()
 $innerElementByRoot['forms']         = 'systemform/form'
 $innerElementByRoot['visualization'] = 'datadescription/datadefinition'
 
@@ -119,8 +123,8 @@ function Test-OneFile([string]$File) {
 function Test-OneFileCore([string]$File) {
     $root = Get-RootElementName $File
 
-    if ($Schema) {
-        $xsd = $Schema
+    if ($forcedSchema) {
+        $xsd = $forcedSchema
     }
     elseif ($rootToSchema.ContainsKey($root)) {
         $xsd = $rootToSchema[$root]
@@ -136,8 +140,10 @@ function Test-OneFileCore([string]$File) {
     $set = Get-SchemaSet $xsd
 
     $errors = [System.Collections.Generic.List[string]]::new()
+    # No param block: the delegate's first argument (sender) is unused, and naming it would
+    # shadow the $sender automatic variable. $args[1] is the ValidationEventArgs.
     $handler = [System.Xml.Schema.ValidationEventHandler] {
-        param($sender, $e)
+        $e = $args[1]
         $sev = if ($e.Severity -eq [System.Xml.Schema.XmlSeverityType]::Warning) { 'WARN' } else { 'ERROR' }
         $line = $e.Exception.LineNumber
         $col = $e.Exception.LinePosition
@@ -161,7 +167,7 @@ function Test-OneFileCore([string]$File) {
     }
 
     # Validate the whole file, or - for a pac wrapper root like <forms> - each inner fragment.
-    if (-not $Schema -and $innerElementByRoot.ContainsKey($root)) {
+    if (-not $forcedSchema -and $innerElementByRoot.ContainsKey($root)) {
         $parts = @($innerElementByRoot[$root] -split '/')
         $found = 0
 
