@@ -1,0 +1,18 @@
+<visualization>
+  <datadescription>&lt;datadefinition&gt;
+  &lt;fetchcollection&gt;
+    &lt;fetch mapping=&quot;logical&quot; aggregate=&quot;true&quot;&gt;
+      &lt;entity name=&quot;account&quot;&gt;
+        &lt;attribute name=&quot;accountid&quot; aggregate=&quot;count&quot; alias=&quot;count&quot; /&gt;
+      &lt;/entity&gt;
+    &lt;/fetch&gt;
+  &lt;/fetchcollection&gt;
+  &lt;categorycollection&gt;
+    &lt;category&gt;
+      &lt;measurecollection&gt;
+        &lt;measure alias=&quot;count&quot; /&gt;
+      &lt;/measurecollection&gt;
+    &lt;/category&gt;
+  &lt;/categorycollection&gt;
+&lt;/datadefinition&gt;</datadescription>
+</visualization>

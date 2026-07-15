@@ -15,6 +15,8 @@
         configuration   -> isv.config.xsd                      (legacy ISV.Config)
         viewers         -> reports.config.xsd                  (report viewer config)
     Reports every error/warning with line/column and exits non-zero if any file fails.
+    Forcing -Schema validates the whole file as-is: the wrapper extraction that normally
+    applies to <forms> and <visualization> files is skipped.
     This is the tool-agnostic backbone: run it before pac pack/import so bad edits fail loud.
 
 .EXAMPLE
@@ -44,7 +46,9 @@ if (-not $SchemaDir) {
     $SchemaDir = Join-Path $PSScriptRoot '..\schemas\9.0.0.2090'
 }
 if (-not (Test-Path $SchemaDir)) {
-    Write-Error "Schema directory not found: $SchemaDir"
+    # Console.Error, not Write-Error: under ErrorActionPreference=Stop the latter throws
+    # and the documented exit code 2 would never be reached.
+    [Console]::Error.WriteLine("Schema directory not found: $SchemaDir")
     exit 2
 }
 $SchemaDir = (Resolve-Path $SchemaDir).Path
@@ -66,11 +70,11 @@ $rootToSchema['configuration']   = 'isv.config.xsd'
 $rootToSchema['viewers']         = 'reports.config.xsd'
 
 # Wrapper roots: pac wraps the schema's real root in container elements. For these files,
-# each inner fragment (XPath, relative to the document element) is validated instead.
-$innerElementByRoot = @{
-    'forms'         = 'systemform/form'
-    'visualization' = 'datadescription/datadefinition'
-}
+# each inner fragment (path, relative to the document element) is validated instead.
+# Case-sensitive for the same reason as $rootToSchema.
+$innerElementByRoot = [System.Collections.Hashtable]::new()
+$innerElementByRoot['forms']         = 'systemform/form'
+$innerElementByRoot['visualization'] = 'datadescription/datadefinition'
 
 # Cache compiled schema sets by xsd filename so a batch of files loads each schema once.
 $schemaSetCache = @{}
@@ -102,6 +106,17 @@ function Get-RootElementName([string]$File) {
 }
 
 function Test-OneFile([string]$File) {
+    try { return Test-OneFileCore $File }
+    catch {
+        # A missing or unparseable file fails on its own; the rest of the batch still runs
+        # and the summary stays trustworthy.
+        Write-Host "FAIL  $File" -ForegroundColor Red
+        Write-Host ("      [ERROR] " + $_.Exception.Message) -ForegroundColor Red
+        return [pscustomobject]@{ File = $File; Status = 'FAIL'; Errors = 1 }
+    }
+}
+
+function Test-OneFileCore([string]$File) {
     $root = Get-RootElementName $File
 
     if ($Schema) {
@@ -136,29 +151,81 @@ function Test-OneFile([string]$File) {
         -bor [System.Xml.Schema.XmlSchemaValidationFlags]::ReportValidationWarnings
     $rs.add_ValidationEventHandler($handler)
 
-    # Build the list of XML inputs to validate: either the whole file, or (for a pac wrapper
-    # like <forms>) each inner fragment validated against the schema's real root element.
-    $inputs = [System.Collections.Generic.List[object]]::new()
-    if (-not $Schema -and $innerElementByRoot.ContainsKey($root)) {
-        $doc = [System.Xml.XmlDocument]::new()
-        $doc.Load($File)
-        foreach ($node in $doc.DocumentElement.SelectNodes($innerElementByRoot[$root])) {
-            $inputs.Add([System.IO.StringReader]::new($node.OuterXml))
-        }
-        if ($inputs.Count -eq 0) { $errors.Add("      [ERROR] no <$($innerElementByRoot[$root])> element found under <$root>") }
-    }
-    else {
-        $inputs.Add($File)
+    # Read one XML input (file path, TextReader or XmlReader) through the validating settings.
+    # Well-formedness (parse) errors surface as exceptions, not validation events.
+    function Read-WithValidation([object]$XmlInput) {
+        $reader = [System.Xml.XmlReader]::Create($XmlInput, $rs)
+        try { while ($reader.Read()) { } }
+        catch { $errors.Add("      [ERROR] " + $_.Exception.Message) }
+        finally { $reader.Dispose() }
     }
 
-    foreach ($input in $inputs) {
-        $reader = [System.Xml.XmlReader]::Create($input, $rs)
-        try { while ($reader.Read()) { } }
-        catch {
-            # Well-formedness (parse) errors surface as exceptions, not validation events.
-            $errors.Add("      [ERROR] " + $_.Exception.Message)
+    # Validate the whole file, or - for a pac wrapper root like <forms> - each inner fragment.
+    if (-not $Schema -and $innerElementByRoot.ContainsKey($root)) {
+        $parts = @($innerElementByRoot[$root] -split '/')
+        $found = 0
+
+        # ReadSubtree keeps the source reader's line info, so fragment errors report real
+        # file positions (re-serializing OuterXml would restart numbering at line 1).
+        $outerSettings = [System.Xml.XmlReaderSettings]::new()
+        $outerSettings.DtdProcessing = [System.Xml.DtdProcessing]::Ignore
+        $outer = [System.Xml.XmlReader]::Create($File, $outerSettings)
+        try {
+            $nameAtDepth = @{}
+            while ($outer.Read()) {
+                if ($outer.NodeType -ne [System.Xml.XmlNodeType]::Element) { continue }
+                $nameAtDepth[$outer.Depth] = $outer.LocalName
+                if ($outer.Depth -ne $parts.Count) { continue }
+                $onPath = $true
+                for ($i = 0; $i -lt $parts.Count; $i++) {
+                    if ($nameAtDepth[$i + 1] -cne $parts[$i]) { $onPath = $false; break }
+                }
+                if ($onPath) {
+                    $found++
+                    Read-WithValidation $outer.ReadSubtree()
+                }
+            }
         }
-        finally { $reader.Dispose() }
+        finally { $outer.Dispose() }
+
+        if ($found -eq 0) {
+            # Some exports store the fragment as escaped XML text inside the wrapper (charts
+            # especially: <datadescription>&lt;datadefinition ...&gt;). Unescape and validate
+            # that; positions are then relative to the fragment, not the file.
+            $fragName = $parts[-1]
+            $doc = [System.Xml.XmlDocument]::new()
+            $doc.Load($File)
+            $container = $doc.DocumentElement.SelectSingleNode($parts[0])
+            $text = if ($container) { $container.InnerText } else { '' }
+            if ($text.Trim()) {
+                $innerDoc = [System.Xml.XmlDocument]::new()
+                $parsed = $false
+                try {
+                    $innerDoc.LoadXml($text)
+                    $parsed = $true
+                }
+                catch {
+                    $errors.Add("      [ERROR] <$($parts[0])> contains text that is not parseable XML; expected a <$fragName> element (possibly escaped). $($_.Exception.Message)")
+                }
+                if ($parsed) {
+                    $frag = if ($innerDoc.DocumentElement.LocalName -ceq $fragName) { $innerDoc.DocumentElement }
+                    else { $innerDoc.DocumentElement.SelectSingleNode(".//$fragName") }
+                    if ($frag) {
+                        $errors.Add("      [WARN] validating escaped XML inside <$($parts[0])>; line/col are relative to the unescaped fragment")
+                        Read-WithValidation ([System.IO.StringReader]::new($frag.OuterXml))
+                    }
+                    else {
+                        $errors.Add("      [ERROR] escaped XML inside <$($parts[0])> contains no <$fragName> element")
+                    }
+                }
+            }
+            else {
+                $errors.Add("      [ERROR] no <$($innerElementByRoot[$root])> element found under <$root>")
+            }
+        }
+    }
+    else {
+        Read-WithValidation $File
     }
 
     $errCount = ($errors | Where-Object { $_ -match '\[ERROR\]' }).Count
@@ -181,7 +248,7 @@ $files = foreach ($p in $Path) {
     if ($resolved) { $resolved.FullName } else { $p }
 }
 $files = $files | Sort-Object -Unique
-if (-not $files) { Write-Error "No files matched: $($Path -join ', ')"; exit 2 }
+if (-not $files) { [Console]::Error.WriteLine("No files matched: $($Path -join ', ')"); exit 2 }
 
 $results = foreach ($f in $files) { Test-OneFile $f }
 
