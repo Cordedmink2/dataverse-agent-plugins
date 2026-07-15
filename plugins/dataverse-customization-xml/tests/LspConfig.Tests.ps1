@@ -26,6 +26,7 @@ Describe 'lemminx file association parity (.lsp.json vs Set-LspSchemaPaths.ps1)'
             }, $true)
         if (-not $assocAssignment) { throw "No `$assoc assignment found in $scriptPath" }
         $hashAst = $assocAssignment.Find({ param($node) $node -is [System.Management.Automation.Language.HashtableAst] }, $true)
+        if (-not $hashAst) { throw "The `$assoc assignment in $scriptPath is no longer a hashtable literal; update this test's extraction." }
         $assoc = $hashAst.SafeGetValue()
 
         # Script scope: these are read by the It blocks below, which run in their own scope.

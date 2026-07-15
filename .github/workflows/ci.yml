@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -30,14 +38,16 @@ jobs:
       - name: End-to-end setup (fetch schemas + lemminx, stamp paths, self-check)
         run: ./plugins/dataverse-customization-xml/scripts/Install-Plugin.ps1
 
+      # Version bounds on both modules are deliberate: a new major on the PowerShell Gallery
+      # should not be able to turn CI red without a change in this repo.
       - name: Pester tests
         run: |
-          Install-Module Pester -MinimumVersion 5.5.0 -Force -SkipPublisherCheck
+          Install-Module Pester -MinimumVersion 5.5.0 -MaximumVersion 6.99.99 -Force -SkipPublisherCheck
           Invoke-Pester plugins/dataverse-customization-xml/tests -CI
 
       - name: PSScriptAnalyzer
         run: |
-          Install-Module PSScriptAnalyzer -Force
+          Install-Module PSScriptAnalyzer -MaximumVersion 1.99.99 -Force
           $findings = Invoke-ScriptAnalyzer -Path plugins -Recurse -Settings ./PSScriptAnalyzerSettings.psd1
-          $findings | Format-Table -AutoSize
+          $findings | Format-Table -AutoSize | Out-String -Width 4096 | Write-Host
           if ($findings) { exit 1 }

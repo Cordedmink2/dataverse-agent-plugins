@@ -140,8 +140,8 @@ function Test-OneFileCore([string]$File) {
     $set = Get-SchemaSet $xsd
 
     $errors = [System.Collections.Generic.List[string]]::new()
-    # No param block: the delegate's first argument (sender) is unused, and naming it would
-    # shadow the $sender automatic variable. $args[1] is the ValidationEventArgs.
+    # No param block: the delegate's first (sender) argument is unused, and any named-but-unused
+    # parameter trips PSReviewUnusedParameter. $args[1] is the ValidationEventArgs.
     $handler = [System.Xml.Schema.ValidationEventHandler] {
         $e = $args[1]
         $sev = if ($e.Severity -eq [System.Xml.Schema.XmlSeverityType]::Warning) { 'WARN' } else { 'ERROR' }
