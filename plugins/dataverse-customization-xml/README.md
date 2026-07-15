@@ -1,20 +1,9 @@
 # dataverse-customization-xml
 
-A global Claude Code plugin for **schema-validated hand-editing of Dataverse / model-driven-app
+A Claude Code plugin for **schema-validated hand-editing of Dataverse / model-driven-app
 customization XML** — ribbon buttons (`RibbonDiffXml`), app navigation (`SiteMap`), forms
-(`FormXml`), and the whole `Customizations.xml`. Malformed edits fail loud *before*
-`pac solution import`.
-
-## What's inside
-
-| Path | Purpose |
-|------|---------|
-| `schemas/9.0.0.2090/` | The 12 official Microsoft XSDs (see `schemas/SOURCE.md`) |
-| `scripts/Validate-DataverseXml.ps1` | Standalone validator — root-element → XSD, line/col errors, non-zero exit |
-| `scripts/Set-LspSchemaPaths.ps1` | Stamp this machine's absolute schema paths into `.lsp.json` (+ VS Code) |
-| `bin/lemminx-win32.exe` | Native lemminx XML language server (GraalVM build; no Java) |
-| `.lsp.json` | Registers lemminx with Claude Code, with XSD `fileAssociations` |
-| `SKILL.md` | The skill: workflow, ribbon-button recipe, gotchas |
+(`FormXml`), FetchXML, charts, and the whole `Customizations.xml`. Malformed edits fail loud
+*before* `pac solution import`.
 
 ## Two validation layers
 
@@ -23,19 +12,74 @@ customization XML** — ribbon buttons (`RibbonDiffXml`), app navigation (`SiteM
 2. **LSP (live)** — lemminx pushes diagnostics as you edit. Wired for Claude Code (this plugin's
    `.lsp.json`) and VS Code (RedHat XML extension via `xml.fileAssociations`).
 
-## Install on a new machine
+## Install (Claude Code)
 
-1. Sync the plugin into `~/.claude/skills/dataverse-customization-xml/` (via the `claude-skills`
-   repo). It auto-loads as `dataverse-customization-xml@skills-dir`.
-2. `pwsh scripts/Get-Lemminx.ps1` — downloads the native lemminx binary into `bin/` (it's ~47 MB
-   and platform-specific, so it is **not** committed; use `-TargetPlatform` for non-Windows).
-3. `pwsh scripts/Set-LspSchemaPaths.ps1 -UpdateVSCode` — fixes absolute schema paths for this
-   machine (`${CLAUDE_PLUGIN_ROOT}` isn't substituted inside `.lsp.json` settings).
-4. `/reload-plugins` (Claude) and restart VS Code.
-5. For live VS Code validation, install `redhat.vscode-xml`.
+```
+/plugin marketplace add Cordedmink2/dataverse-agent-plugins
+/plugin install dataverse-customization-xml
+/dataverse-customization-xml:setup
+```
 
-The standalone validator (`scripts/Validate-DataverseXml.ps1`) needs none of the above — only the
-lemminx LSP layer requires the binary in `bin/`.
+The setup command fetches the Microsoft XSDs and the lemminx binary, stamps this machine's
+absolute paths, and runs a self-check. Then run `/reload-plugins` (or restart the session) so
+the LSP starts with the stamped paths.
+
+## Setup script directly (non-Claude consumers)
+
+The slash command is a thin wrapper around one idempotent script:
+
+```
+pwsh scripts/Install-Plugin.ps1 [-UpdateVSCode] [-SkipLemminx] [-TargetPlatform <win32-x64|linux-x64|darwin-x64|darwin-arm64>]
+```
+
+- `-UpdateVSCode` also writes `xml.fileAssociations` into your VS Code user settings.
+- `-SkipLemminx` skips the ~47 MB LSP binary — validator-only setup (fine for CI and non-Claude
+  agents).
+- `-TargetPlatform` overrides the auto-detected OS/arch for the lemminx download.
+
+Run this one script rather than the individual `Get-*`/`Set-*` scripts — a partial manual setup
+can leave a running lemminx pointing at broken relative schema paths.
+
+## What's inside
+
+| Path | Purpose |
+|------|---------|
+| `SKILL.md` | The skill: workflow, root→schema table, ribbon-button recipe, gotchas |
+| `commands/setup.md` | The `/dataverse-customization-xml:setup` slash command |
+| `scripts/Install-Plugin.ps1` | One-shot setup: schemas + lemminx + path stamping + self-check |
+| `scripts/Validate-DataverseXml.ps1` | Standalone validator — root-element → XSD, line/col errors, non-zero exit |
+| `scripts/Get-Schemas.ps1` | Download the official Microsoft XSDs into `schemas/<version>/` |
+| `scripts/Get-Lemminx.ps1` | Download the native lemminx binary into `bin/` (SHA256-verified) |
+| `scripts/Set-LspSchemaPaths.ps1` | Stamp this machine's absolute schema paths into `.lsp.json` (+ VS Code) |
+| `.lsp.json` | Registers lemminx with Claude Code, with XSD `fileAssociations` |
+| `versions.json` | Pinned schema version/URL and lemminx (vscode-xml) version |
+| `schemas/SOURCE.md` | Where the XSDs come from and how to bump the version |
+| `tests/` | Pester suite + valid/invalid fixtures for every mapped root |
+| `docs/` | Guides for Codex, VS Code-only, and debugging |
+
+The Microsoft XSDs (`schemas/<version>/`) and the lemminx binary (`bin/`) are **fetched at
+setup, not shipped** — the XSDs are Microsoft-copyrighted and the binary is large and
+platform-specific.
+
+## Updating
+
+```
+/plugin update dataverse-customization-xml
+/dataverse-customization-xml:setup
+```
+
+Re-run setup after every update — it re-stamps paths and re-checks the fetched assets (see
+`docs/debugging.md` for why). Schema-version bumps are driven by `versions.json`; the procedure
+is in `schemas/SOURCE.md`.
+
+## Other consumers
+
+- **Codex / any non-Claude agent** — see [`docs/codex.md`](docs/codex.md).
+- **VS Code only (no agent)** — see [`docs/vscode.md`](docs/vscode.md).
+- **CI / pre-commit** — call the validator script directly:
+  `pwsh scripts/Validate-DataverseXml.ps1 <files-or-globs>` (non-zero exit on failure).
+
+Something not working? [`docs/debugging.md`](docs/debugging.md).
 
 ## Known caveats
 
@@ -44,5 +88,11 @@ lemminx LSP layer requires the binary in `bin/`.
   validation (RibbonDiff / SiteMap / FormXml) is authoritative.
 - **`${CLAUDE_PLUGIN_ROOT}` is only substituted in `.lsp.json` `command`/`args`**, not in nested
   `settings` — hence the absolute-path fixup script.
+
+## License
+
+The plugin is MIT-licensed (see the repo root `LICENSE`). The Microsoft XSDs are downloaded
+from Microsoft at setup time and remain subject to Microsoft's terms — they are not
+redistributed in this repo.
 
 See `SKILL.md` for the ribbon-button recipe and the full edit → validate → pack → import loop.

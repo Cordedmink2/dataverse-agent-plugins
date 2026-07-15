@@ -13,8 +13,9 @@ description: >-
 # Dataverse customization XML (schema-validated)
 
 Edit Dataverse customization XML so malformed edits **fail loud before `pac solution import`**,
-not silently at import time. Two validation layers share the same bundled XSDs
-(`schemas/9.0.0.2090/`, official Microsoft schema set):
+not silently at import time. Two validation layers share the same official Microsoft XSD set
+(`schemas/9.0.0.2090/`, fetched at setup — if the validator exits 2 with "Schema directory not
+found", run `/dataverse-customization-xml:setup` or `pwsh scripts/Install-Plugin.ps1`):
 
 1. **`scripts/Validate-DataverseXml.ps1`** — the backbone. Run it after every edit and before
    pack/import. Tool-agnostic (any shell, CI, Codex). No Java, no network.
@@ -25,7 +26,7 @@ not silently at import time. Two validation layers share the same bundled XSDs
 > in the main interactive session — a spawned subagent (Agent tool), a workflow step, or any
 > non-main-session context does NOT receive them. In those contexts, always run
 > `Validate-DataverseXml.ps1` explicitly after editing; don't assume squiggles appeared. The
-> script is self-contained (pwsh + the bundled XSDs) and needs no LSP.
+> script is self-contained (pwsh + the fetched XSDs) and needs no LSP.
 
 ## Always validate after editing
 
@@ -35,12 +36,21 @@ pwsh <plugin>/scripts/Validate-DataverseXml.ps1 <path-to-xml> [more paths / glob
 
 It picks the schema by the file's **root element**:
 
-| Root element      | Schema                        | Notes |
-|-------------------|-------------------------------|-------|
-| `RibbonDiffXml`   | `RibbonCore.xsd`              | Per-entity `RibbonDiff.xml` or app ribbon — **authoritative** |
-| `SiteMap`         | `SiteMap.xsd`                 | App navigation |
-| `form` / `forms`  | `FormXml.xsd`                 | Form definitions |
-| `ImportExportXml` | `CustomizationsSolution.xsd`  | Whole `Customizations.xml` — **indicative only** (see caveat) |
+| Root element        | Schema                        | Notes |
+|---------------------|-------------------------------|-------|
+| `RibbonDiffXml`     | `RibbonCore.xsd`              | Per-entity `RibbonDiff.xml` or app ribbon — **authoritative** |
+| `SiteMap`           | `SiteMap.xsd`                 | App navigation — authoritative |
+| `form` / `forms`    | `FormXml.xsd`                 | Forms; pac's `<forms>` wrapper → each inner `systemform/form` validated — indicative (schema lags modern form attrs) |
+| `fetch`             | `Fetch.xsd`                   | FetchXML queries (`.fetchxml` files, query fragments) — authoritative |
+| `savedquery`        | `Fetch.xsd`                   | pac `SavedQueries/*.xml` — authoritative |
+| `visualization` / `datadefinition` | `VisualizationDataDescription.xsd` | Charts; the `<visualization>` wrapper's inner `datadescription/datadefinition` is validated (escaped inner XML handled — see gotchas) |
+| `configuration`     | `isv.config.xsd`              | Legacy ISV config |
+| `importexportxml` (lowercase) | `ParameterXml.xsd`  | Configuration-migration parameter XML — note the case difference from `ImportExportXml` |
+| `viewers`           | `reports.config.xsd`          | Report viewers config |
+| `ImportExportXml`   | `CustomizationsSolution.xsd`  | Whole `Customizations.xml` — **indicative only** (see caveat) |
+
+Unknown root elements **fail loud** (exit 1) and list the supported roots — use
+`-Schema <file.xsd>` to force one.
 
 Non-zero exit = validation failed. Fix and re-run until clean, then pack/import.
 
@@ -111,18 +121,24 @@ pack/import mechanics.
   noise as expected. The **ribbon** fragment (`RibbonCore.xsd`) is stable and fully authoritative.
 - **Form files are validated per inner `<form>`.** pac unpacks forms as
   `<forms><systemform>…<form/>…</systemform></forms>`, but `FormXml.xsd`'s root is `<form>`. The
-  validator extracts each `systemform/form` and validates it against the schema; reported
-  line/col are relative to that fragment, not the whole file.
+  validator validates each `systemform/form` subtree in place, so reported line/col are real
+  positions in the file.
+- **Chart `<visualization>` files with escaped inner XML are handled.** Some exports store the
+  `datadescription` content as escaped text (`&lt;datadefinition …&gt;`) rather than nested
+  XML. The validator unescapes and validates that fragment too, emitting a WARN that line/col
+  are relative to the unescaped fragment rather than the file.
 - **The ultimate structural gate is `pac solution pack`** — it runs SolutionPackager's own
   validation. If it packs, the solution is structurally sound for import.
 - **`${CLAUDE_PLUGIN_ROOT}` is not substituted** inside `.lsp.json` `initializationOptions`/
   `settings` — only in `command`/`args`. Schema `systemId`s there use absolute paths. On a new
-  machine, run `scripts/Set-LspSchemaPaths.ps1` to re-stamp them (and VS Code settings).
+  machine (or after a plugin update), run `/dataverse-customization-xml:setup` — or
+  `scripts/Set-LspSchemaPaths.ps1` alone — to re-stamp them (and VS Code settings).
 - lemminx validates a document only inside a real workspace and after answering its
   `workspace/configuration` pull — Claude Code and VS Code both handle that; a bare LSP client
   must too.
 
 ## Refreshing the schemas
 
-See `schemas/SOURCE.md` — download Microsoft's `Schemas.zip`, replace the version folder, update
-the version everywhere it appears (`schemas/`, `.lsp.json`, VS Code settings).
+To move to a newer schema release: update `schemaVersion` (and `schemasZipUrl` if Microsoft
+publishes a new link) in `versions.json`, run `pwsh scripts/Get-Schemas.ps1 -Force`, run
+`pwsh scripts/Set-LspSchemaPaths.ps1`, then run the test suite. Details in `schemas/SOURCE.md`.
