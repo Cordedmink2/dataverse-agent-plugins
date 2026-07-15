@@ -9,6 +9,10 @@
     and pulls the version pinned in versions.json from the RedHat vscode-xml package on Open VSX —
     no Java required. Use -Latest to fetch the newest release instead of the pin.
 
+    The binary is discovered inside the vsix (extension/server/lemminx-*) and extracted into bin/
+    under its original name; any previous bin/lemminx* file is removed first so bin/ only ever
+    holds one binary.
+
 .EXAMPLE
     pwsh scripts/Get-Lemminx.ps1                       # auto-detected platform, pinned version
     pwsh scripts/Get-Lemminx.ps1 -TargetPlatform linux-x64
@@ -37,13 +41,6 @@ if (-not $TargetPlatform) {
 $bin = Join-Path $pluginRoot 'bin'
 New-Item -ItemType Directory -Force -Path $bin | Out-Null
 
-# The native binary name inside the vsix differs by OS.
-$exeName = switch -Wildcard ($TargetPlatform) {
-    'win32-*'  { 'lemminx-win32.exe' }
-    'linux-*'  { 'lemminx-linux' }
-    'darwin-*' { 'lemminx-osx-x86_64' }
-}
-
 $version = if ($Latest) { 'latest' }
 else { (Get-Content (Join-Path $pluginRoot 'versions.json') -Raw | ConvertFrom-Json).vscodeXmlVersion }
 
@@ -58,8 +55,25 @@ try {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = [System.IO.Compression.ZipFile]::OpenRead($tmp)
     try {
-        $entry = $zip.Entries | Where-Object FullName -eq "extension/server/$exeName"
-        if (-not $entry) { throw "Could not find extension/server/$exeName in the vsix." }
+        # The binary's name inside the vsix differs by OS/arch, so discover it rather than
+        # hardcode it. Each binary ships with a .sha256 checksum entry — skip those.
+        $entries = @($zip.Entries | Where-Object {
+                $_.FullName -like 'extension/server/lemminx-*' -and
+                $_.FullName -notlike '*.sha256' -and
+                $_.Name
+            })
+        if ($entries.Count -eq 0) {
+            throw 'no lemminx-* binary found under extension/server/ in the vsix — layout changed?'
+        }
+        if ($entries.Count -gt 1) {
+            throw "Expected exactly one lemminx-* binary in the vsix, found $($entries.Count): $($entries.FullName -join ', ')"
+        }
+        $entry = $entries[0]
+        $exeName = $entry.Name
+
+        # A leftover binary from another platform/version would break downstream bin/lemminx* globs.
+        Get-ChildItem $bin -Filter 'lemminx*' -File | Remove-Item -Force
+
         $out = Join-Path $bin $exeName
         [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $out, $true)
         Write-Host "Extracted $out ($([math]::Round((Get-Item $out).Length/1MB,1)) MB)" -ForegroundColor Green
