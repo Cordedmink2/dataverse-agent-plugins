@@ -24,6 +24,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $pluginRoot = Split-Path $PSScriptRoot -Parent
 
+# Child scripts must fail via throw, never exit <nonzero>: an exit through '&' returns
+# to this script without stopping it, so the failure would go unnoticed.
 Write-Host "== 1/4 Schemas ==" -ForegroundColor Cyan
 & (Join-Path $PSScriptRoot 'Get-Schemas.ps1')
 
@@ -47,10 +49,11 @@ else {
 Write-Host "== 4/4 Self-check ==" -ForegroundColor Cyan
 $validator = Join-Path $PSScriptRoot 'Validate-DataverseXml.ps1'
 $fixtures = Join-Path $pluginRoot 'tests' 'fixtures'
-pwsh -NoProfile -File $validator (Join-Path $fixtures 'valid' 'ribbon.xml') | Out-Null
-if ($LASTEXITCODE -ne 0) { throw "Self-check FAILED: known-good fixture did not validate." }
-pwsh -NoProfile -File $validator (Join-Path $fixtures 'invalid' 'ribbon.xml') | Out-Null
-if ($LASTEXITCODE -ne 1) { throw "Self-check FAILED: known-bad fixture was not rejected." }
+$pwshExe = [Environment]::ProcessPath  # this host is pwsh 7 (#requires), so reuse it rather than trusting PATH
+$out = & $pwshExe -NoProfile -File $validator (Join-Path $fixtures 'valid' 'ribbon.xml') 2>&1
+if ($LASTEXITCODE -ne 0) { $out | Write-Host; throw "Self-check FAILED: known-good fixture did not validate." }
+$out = & $pwshExe -NoProfile -File $validator (Join-Path $fixtures 'invalid' 'ribbon.xml') 2>&1
+if ($LASTEXITCODE -ne 1) { $out | Write-Host; throw "Self-check FAILED: known-bad fixture was not rejected." }
 
 Write-Host "`nSetup complete - self-check passed." -ForegroundColor Green
 Write-Host "Claude Code: run /reload-plugins (or restart the session)."
