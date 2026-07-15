@@ -1,5 +1,10 @@
 # Dataverse customization XSD schemas
 
+> The XSDs are **not committed** to this repo (they are Microsoft's). Run
+> `pwsh scripts/Get-Schemas.ps1` to download them into `schemas/9.0.0.2090/`.
+> Manual fallback: download the zip below yourself and extract the `.xsd` files
+> into that folder.
+
 These are the official Microsoft schemas for validating the Dataverse / model-driven-apps
 customization file (`customizations.xml`) and its fragments (ribbon, sitemap, forms, views, charts).
 
@@ -23,4 +28,6 @@ that schema. The whole monolithic `customizations.xml` (root `ImportExportXml`) 
 
 None of the schemas declare a `targetNamespace`, so the XML uses unqualified element names.
 
-To refresh: download the zip above, replace the version folder, and update the version here.
+To move to a newer schema release: update `schemaVersion` (and `schemasZipUrl` if Microsoft
+publishes a new link) in `versions.json`, run `pwsh scripts/Get-Schemas.ps1 -Force`, run
+`pwsh scripts/Set-LspSchemaPaths.ps1`, then run the test suite.
