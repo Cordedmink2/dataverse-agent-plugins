@@ -1,0 +1,23 @@
+# dataverse-agent-plugins
+
+> Claude Code plugin marketplace for Microsoft Dataverse development. Its founding plugin,
+> dataverse-customization-xml, validates hand-edited Dataverse customization XML (ribbon,
+> sitemap, forms, FetchXML, charts, ISV config) against the official Microsoft XSDs via a
+> standalone PowerShell 7 validator and lemminx LSP diagnostics. XSDs and the lemminx binary
+> are fetched at setup, not committed. Install in Claude Code:
+> /plugin marketplace add Cordedmink2/dataverse-agent-plugins
+
+## Docs
+
+- [Repo README](README.md): marketplace overview, install, requirements
+- [Plugin README](plugins/dataverse-customization-xml/README.md): full setup for every consumer type
+- [SKILL.md](plugins/dataverse-customization-xml/SKILL.md): the agent skill — validation workflow, root-element→schema table, ribbon-button recipe, gotchas
+- [Codex guide](plugins/dataverse-customization-xml/docs/codex.md): using the validator loop from non-Claude agents
+- [VS Code guide](plugins/dataverse-customization-xml/docs/vscode.md): editor-only setup, CI usage
+- [Debugging](plugins/dataverse-customization-xml/docs/debugging.md): setup failures, missing diagnostics, false positives
+- [Schema source](plugins/dataverse-customization-xml/schemas/SOURCE.md): where the Microsoft XSDs come from, refresh procedure
+
+## Optional
+
+- [Design spec](docs/specs/2026-07-15-dataverse-agent-plugins-repo-design.md): why the repo is shaped this way
+- [Changelog](CHANGELOG.md)
