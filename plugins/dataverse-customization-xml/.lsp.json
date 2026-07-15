@@ -1,0 +1,66 @@
+{
+  "xml": {
+    "command": "${CLAUDE_PLUGIN_ROOT}/bin/lemminx-win32.exe",
+    "extensionToLanguage": {
+      ".xml": "xml"
+    },
+    "initializationOptions": {
+      "settings": {
+        "xml": {
+          "validation": {
+            "enabled": true,
+            "schema": {
+              "enabled": "always"
+            }
+          },
+          "fileAssociations": [
+            {
+              "pattern": "**/RibbonDiff.xml",
+              "systemId": "C:/Users/c.parsons/.claude/skills/dataverse-customization-xml/schemas/9.0.0.2090/RibbonCore.xsd"
+            },
+            {
+              "pattern": "**/[Cc]ustomizations.xml",
+              "systemId": "C:/Users/c.parsons/.claude/skills/dataverse-customization-xml/schemas/9.0.0.2090/CustomizationsSolution.xsd"
+            },
+            {
+              "pattern": "**/SiteMap*.xml",
+              "systemId": "C:/Users/c.parsons/.claude/skills/dataverse-customization-xml/schemas/9.0.0.2090/SiteMap.xsd"
+            },
+            {
+              "pattern": "**/FormXml/**/*.xml",
+              "systemId": "C:/Users/c.parsons/.claude/skills/dataverse-customization-xml/schemas/9.0.0.2090/FormXml.xsd"
+            }
+          ]
+        }
+      }
+    },
+    "settings": {
+      "xml": {
+        "validation": {
+          "enabled": true,
+          "schema": {
+            "enabled": "always"
+          }
+        },
+        "fileAssociations": [
+          {
+            "pattern": "**/RibbonDiff.xml",
+            "systemId": "C:/Users/c.parsons/.claude/skills/dataverse-customization-xml/schemas/9.0.0.2090/RibbonCore.xsd"
+          },
+          {
+            "pattern": "**/[Cc]ustomizations.xml",
+            "systemId": "C:/Users/c.parsons/.claude/skills/dataverse-customization-xml/schemas/9.0.0.2090/CustomizationsSolution.xsd"
+          },
+          {
+            "pattern": "**/SiteMap*.xml",
+            "systemId": "C:/Users/c.parsons/.claude/skills/dataverse-customization-xml/schemas/9.0.0.2090/SiteMap.xsd"
+          },
+          {
+            "pattern": "**/FormXml/**/*.xml",
+            "systemId": "C:/Users/c.parsons/.claude/skills/dataverse-customization-xml/schemas/9.0.0.2090/FormXml.xsd"
+          }
+        ]
+      }
+    }
+  }
+}

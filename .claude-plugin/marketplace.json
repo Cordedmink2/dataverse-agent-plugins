@@ -1,0 +1,17 @@
+{
+  "name": "dataverse-agent-plugins",
+  "owner": {
+    "name": "Connor Parsons"
+  },
+  "metadata": {
+    "description": "Agent plugins for Microsoft Dataverse / Power Platform development"
+  },
+  "plugins": [
+    {
+      "name": "dataverse-customization-xml",
+      "source": "./plugins/dataverse-customization-xml",
+      "description": "Schema-validated hand-editing of Dataverse customization XML (ribbon, sitemap, forms, FetchXML, charts and more) against the official Microsoft XSDs — standalone PowerShell validator plus live lemminx LSP diagnostics.",
+      "category": "development"
+    }
+  ]
+}

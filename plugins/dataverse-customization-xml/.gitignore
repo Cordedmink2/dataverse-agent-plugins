@@ -1,0 +1,4 @@
+# Fetched at setup by scripts/Get-Lemminx.ps1 (~47 MB, platform-specific)
+bin/
+# Fetched at setup by scripts/Get-Schemas.ps1 (Microsoft-copyrighted, not redistributed)
+schemas/*/
