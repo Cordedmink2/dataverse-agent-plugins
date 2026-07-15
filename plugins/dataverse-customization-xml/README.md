@@ -16,13 +16,14 @@ customization XML** — ribbon buttons (`RibbonDiffXml`), app navigation (`SiteM
 
 ```
 /plugin marketplace add Cordedmink2/dataverse-agent-plugins
-/plugin install dataverse-customization-xml
+/plugin install dataverse-customization-xml@dataverse-agent-plugins
 /dataverse-customization-xml:setup
 ```
 
 The setup command fetches the Microsoft XSDs and the lemminx binary, stamps this machine's
-absolute paths, and runs a self-check. Then run `/reload-plugins` (or restart the session) so
-the LSP starts with the stamped paths.
+absolute paths, and runs a self-check. It requires PowerShell 7+ (`pwsh`) — Windows ships
+only Windows PowerShell 5.1, and the scripts have `#requires -Version 7`. Then run
+`/reload-plugins` (or restart the session) so the LSP starts with the stamped paths.
 
 ## Setup script directly (non-Claude consumers)
 
@@ -64,7 +65,8 @@ platform-specific.
 ## Updating
 
 ```
-/plugin update dataverse-customization-xml
+/plugin marketplace update dataverse-agent-plugins
+/plugin update dataverse-customization-xml@dataverse-agent-plugins
 /dataverse-customization-xml:setup
 ```
 
@@ -84,8 +86,9 @@ Something not working? [`docs/debugging.md`](docs/debugging.md).
 ## Known caveats
 
 - **Whole `Customizations.xml` validation is indicative only** — the `9.0.0.2090` schema lags
-  current Dataverse exports (newer attributes/elements report as "not declared"). Fragment
-  validation (RibbonDiff / SiteMap / FormXml) is authoritative.
+  current Dataverse exports (newer attributes/elements report as "not declared"). RibbonDiff /
+  SiteMap fragment validation is authoritative; FormXml is indicative (the schema lags modern
+  form attributes like `headerdensity`, `contenttype`).
 - **`${CLAUDE_PLUGIN_ROOT}` is only substituted in `.lsp.json` `command`/`args`**, not in nested
   `settings` — hence the absolute-path fixup script.
 

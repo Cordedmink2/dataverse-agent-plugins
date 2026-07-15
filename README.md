@@ -7,10 +7,11 @@ plugin also works standalone (plain PowerShell scripts) for other agents, VS Cod
 ## Install (Claude Code)
 
     /plugin marketplace add Cordedmink2/dataverse-agent-plugins
-    /plugin install dataverse-customization-xml
+    /plugin install dataverse-customization-xml@dataverse-agent-plugins
     /dataverse-customization-xml:setup
 
-Update later with `/plugin update dataverse-customization-xml` (re-run setup after updates).
+Update later with `/plugin marketplace update dataverse-agent-plugins` then
+`/plugin update dataverse-customization-xml@dataverse-agent-plugins` (re-run setup after updates).
 
 ## Plugins
 

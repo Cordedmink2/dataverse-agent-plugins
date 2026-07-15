@@ -64,10 +64,12 @@ dataverse-agent-plugins/
 Install UX:
 
 1. `/plugin marketplace add Cordedmink2/dataverse-agent-plugins`
-2. `/plugin install dataverse-customization-xml`
+2. `/plugin install dataverse-customization-xml@dataverse-agent-plugins`
 3. `/dataverse-customization-xml:setup` (or `pwsh scripts/Install-Plugin.ps1`)
 
-Updates arrive via `/plugin update`; re-running setup afterwards is always safe (idempotent).
+Updates arrive via `/plugin marketplace update dataverse-agent-plugins` then
+`/plugin update dataverse-customization-xml@dataverse-agent-plugins`; re-running setup
+afterwards is always safe (idempotent).
 
 ## Component design
 
@@ -196,7 +198,7 @@ After the public repo is live and CI is green:
 ## Success criteria
 
 - A fresh machine (Windows or Linux, with pwsh 7) can go from
-  `/plugin marketplace add` → `/plugin install` → setup → validating a Dataverse XML file, with
-  every step working first try.
+  `/plugin marketplace add` → `/plugin install dataverse-customization-xml@dataverse-agent-plugins`
+  → setup → validating a Dataverse XML file, with every step working first try.
 - CI is green on both OSes, including the end-to-end setup run.
 - Connor's own machine runs the public plugin with the private copies removed.

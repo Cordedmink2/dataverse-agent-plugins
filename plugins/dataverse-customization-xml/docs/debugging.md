@@ -3,7 +3,7 @@
 ## Setup fails
 
 - **Schemas download error** — Microsoft moved the zip. Download manually per
-  `schemas/SOURCE.md` and re-run; please also open an issue.
+  [schemas/SOURCE.md](../schemas/SOURCE.md) and re-run; please also open an issue.
 - **lemminx download error** — Open VSX unavailable or pinned version yanked. Re-try with
   `scripts/Get-Lemminx.ps1 -Latest`, or run validator-only (`Install-Plugin.ps1 -SkipLemminx`).
 - **Self-check failed** — the fixtures under `tests/fixtures/` disagree with the fetched
@@ -22,7 +22,7 @@
 5. Subagents and headless runs NEVER get LSP pushes — that's by design; they must run the
    validator script.
 
-## After `/plugin update`
+## After `/plugin update dataverse-customization-xml@dataverse-agent-plugins`
 
 Setup stamps machine-absolute paths into the **tracked** `.lsp.json` inside the marketplace
 clone, so an update may conflict on that file or reset it to the committed relative paths.
@@ -37,7 +37,7 @@ is one way to keep it out of your commits.
 
 - Is `redhat.vscode-xml` installed? Did you restart after `-UpdateVSCode`?
 - Check File > Preferences > Settings > `xml.fileAssociations` — absolute paths, must exist.
-- JSONC settings file makes the updater refuse to write (see `docs/vscode.md`).
+- JSONC settings file makes the updater refuse to write (see [vscode.md](vscode.md)).
 
 ## Validation errors that aren't yours
 

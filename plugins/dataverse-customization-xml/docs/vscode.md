@@ -2,6 +2,9 @@
 
 Live schema validation while hand-editing Dataverse XML in VS Code.
 
+Prerequisite: PowerShell 7+ (`pwsh`) — Windows ships only Windows PowerShell 5.1, and the
+scripts have `#requires -Version 7`.
+
 1. Clone this repo anywhere.
 2. Run:
 
@@ -37,4 +40,7 @@ pwsh plugins/dataverse-customization-xml/scripts/Validate-DataverseXml.ps1 <file
 - Only the stable VS Code settings path is auto-detected. VS Code Insiders / VSCodium users:
   run the script anyway, then copy the stamped `fileAssociations` array from the plugin's
   `.lsp.json` into your editor's `settings.json` as `xml.fileAssociations` (plus
-  `"xml.validation.enabled": true` and `"xml.validation.schema.enabled": "always"`).
+  `"xml.validation.enabled": true` and `"xml.validation.schema.enabled": "always"`). When
+  copying, replace the `**/[Cc]ustomizations.xml` entry with two plain patterns —
+  `**/Customizations.xml` and `**/customizations.xml` — because the RedHat extension doesn't
+  support character-class globs.
