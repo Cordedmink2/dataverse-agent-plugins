@@ -59,7 +59,10 @@ $platformFilePattern = switch ($TargetPlatform) {
 # bin/.lemminx-version holds "<version> <binary-filename>" from the last successful install.
 function Test-LemminxInstalled([string]$WantedVersion) {
     if (-not (Test-Path $markerPath)) { return $false }
-    $tokens = @((Get-Content $markerPath -Raw).Trim() -split '\s+')
+    # An empty or unparseable marker means "not installed", never a crash.
+    $raw = Get-Content $markerPath -Raw
+    if (-not $raw) { return $false }
+    $tokens = @($raw.Trim() -split '\s+')
     if ($tokens.Count -ne 2) { return $false }
     return $tokens[0] -eq $WantedVersion -and
     $tokens[1] -like $platformFilePattern -and
@@ -96,7 +99,9 @@ $url = $meta.files.download
 Write-Host "Version $($meta.version); downloading vsix..." -ForegroundColor Cyan
 
 $tmp = Join-Path ([System.IO.Path]::GetTempPath()) "vscode-xml-$([System.IO.Path]::GetRandomFileName()).vsix"
-$staged = Join-Path ([System.IO.Path]::GetTempPath()) "lemminx-staged-$([System.IO.Path]::GetRandomFileName())"
+# Stage inside bin/ so the final Move-Item is an atomic same-volume rename (the system temp
+# dir can sit on another drive); the leading dot keeps it out of lemminx* filters and globs.
+$staged = Join-Path $bin ".staged-$([System.IO.Path]::GetRandomFileName())"
 try {
     Invoke-WebRequest -Uri $url -OutFile $tmp -TimeoutSec 300 -MaximumRetryCount 2 -RetryIntervalSec 5
     Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -133,8 +138,8 @@ try {
             throw "Could not parse a SHA256 digest from $($shaEntry.FullName): got '$expectedHash'"
         }
 
-        # Extract to a temp file and verify BEFORE touching bin/, so a corrupt or partial
-        # download never replaces a working binary.
+        # Extract to the staging file and verify BEFORE replacing the installed binary, so a
+        # corrupt or partial download never clobbers a working one.
         [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $staged, $true)
         $actualHash = (Get-FileHash $staged -Algorithm SHA256).Hash
         if ($actualHash -ne $expectedHash) {
