@@ -1,0 +1,16 @@
+<datadefinition>
+  <fetchcollection>
+    <fetch mapping="logical" aggregate="true">
+      <entity name="account">
+        <attribute name="accountid" aggregate="count" alias="count" />
+      </entity>
+    </fetch>
+  </fetchcollection>
+  <categorycollection>
+    <category>
+      <measurecollection>
+        <measure alias="count" />
+      </measurecollection>
+    </category>
+  </categorycollection>
+</datadefinition>

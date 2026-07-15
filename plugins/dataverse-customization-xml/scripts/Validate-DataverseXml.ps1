@@ -5,10 +5,15 @@
 
 .DESCRIPTION
     Picks the schema by the file's root element:
-        ImportExportXml -> CustomizationsSolution.xsd   (whole customizations.xml)
-        RibbonDiffXml   -> RibbonCore.xsd                (per-entity or application ribbon)
-        SiteMap         -> SiteMap.xsd                   (app navigation)
-        form / forms    -> FormXml.xsd                   (form definitions)
+        ImportExportXml -> CustomizationsSolution.xsd          (whole customizations.xml)
+        importexportxml -> ParameterXml.xsd                    (import job / config parameters - lowercase!)
+        RibbonDiffXml   -> RibbonCore.xsd                      (per-entity or application ribbon)
+        SiteMap         -> SiteMap.xsd                         (app navigation)
+        form / forms    -> FormXml.xsd                         (form definitions)
+        fetch / savedquery -> Fetch.xsd                        (FetchXML / saved views)
+        datadefinition / visualization -> VisualizationDataDescription.xsd  (charts)
+        configuration   -> isv.config.xsd                      (legacy ISV.Config)
+        viewers         -> reports.config.xsd                  (report viewer config)
     Reports every error/warning with line/column and exits non-zero if any file fails.
     This is the tool-agnostic backbone: run it before pac pack/import so bad edits fail loud.
 
@@ -44,17 +49,28 @@ if (-not (Test-Path $SchemaDir)) {
 }
 $SchemaDir = (Resolve-Path $SchemaDir).Path
 
-$rootToSchema = @{
-    'ImportExportXml' = 'CustomizationsSolution.xsd'
-    'RibbonDiffXml'   = 'RibbonCore.xsd'
-    'SiteMap'         = 'SiteMap.xsd'
-    'form'            = 'FormXml.xsd'
-    'forms'           = 'FormXml.xsd'
-}
+# Case-sensitive map: ParameterXml's root 'importexportxml' differs from the customizations
+# root 'ImportExportXml' only by case, and PowerShell's @{} literal is case-insensitive.
+$rootToSchema = [System.Collections.Hashtable]::new()
+$rootToSchema['ImportExportXml'] = 'CustomizationsSolution.xsd'
+$rootToSchema['importexportxml'] = 'ParameterXml.xsd'
+$rootToSchema['RibbonDiffXml']   = 'RibbonCore.xsd'
+$rootToSchema['SiteMap']         = 'SiteMap.xsd'
+$rootToSchema['form']            = 'FormXml.xsd'
+$rootToSchema['forms']           = 'FormXml.xsd'
+$rootToSchema['fetch']           = 'Fetch.xsd'
+$rootToSchema['savedquery']      = 'Fetch.xsd'
+$rootToSchema['datadefinition']  = 'VisualizationDataDescription.xsd'
+$rootToSchema['visualization']   = 'VisualizationDataDescription.xsd'
+$rootToSchema['configuration']   = 'isv.config.xsd'
+$rootToSchema['viewers']         = 'reports.config.xsd'
 
-# pac unpacks forms as <forms><systemform>...<form/>...</systemform></forms>, but FormXml.xsd's
-# root is <form>. For such files, validate each inner <form> (XPath) against the schema.
-$innerElementByRoot = @{ 'forms' = 'systemform/form' }
+# Wrapper roots: pac wraps the schema's real root in container elements. For these files,
+# each inner fragment (XPath, relative to the document element) is validated instead.
+$innerElementByRoot = @{
+    'forms'         = 'systemform/form'
+    'visualization' = 'datadescription/datadefinition'
+}
 
 # Cache compiled schema sets by xsd filename so a batch of files loads each schema once.
 $schemaSetCache = @{}
@@ -95,9 +111,11 @@ function Test-OneFile([string]$File) {
         $xsd = $rootToSchema[$root]
     }
     else {
-        Write-Host "SKIP  $File" -ForegroundColor Yellow
-        Write-Host "      Unknown root element <$root> - no schema mapping. Use -Schema to force one." -ForegroundColor Yellow
-        return [pscustomobject]@{ File = $File; Status = 'SKIP'; Errors = 0 }
+        Write-Host "FAIL  $File" -ForegroundColor Red
+        Write-Host "      Unknown root element <$root> - no schema mapping." -ForegroundColor Red
+        Write-Host "      Supported roots: $(($rootToSchema.Keys | Sort-Object) -join ', ')." -ForegroundColor Red
+        Write-Host "      Use -Schema <file.xsd> to force a schema." -ForegroundColor Red
+        return [pscustomobject]@{ File = $File; Status = 'FAIL'; Errors = 1 }
     }
 
     $set = Get-SchemaSet $xsd
@@ -169,10 +187,9 @@ $results = foreach ($f in $files) { Test-OneFile $f }
 
 $failed = @($results | Where-Object Status -eq 'FAIL')
 Write-Host ""
-Write-Host ("{0} file(s): {1} passed, {2} failed, {3} skipped" -f `
+Write-Host ("{0} file(s): {1} passed, {2} failed" -f `
         $results.Count,
     (@($results | Where-Object Status -eq 'PASS')).Count,
-    $failed.Count,
-    (@($results | Where-Object Status -eq 'SKIP')).Count)
+    $failed.Count)
 
 exit ([int]($failed.Count -gt 0))

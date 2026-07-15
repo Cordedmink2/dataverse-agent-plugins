@@ -1,3 +1,6 @@
 # OS noise
 Thumbs.db
 .DS_Store
+
+# Pester -CI run output (NUnit XML), written to repo root wherever Invoke-Pester is run from
+testResults.xml

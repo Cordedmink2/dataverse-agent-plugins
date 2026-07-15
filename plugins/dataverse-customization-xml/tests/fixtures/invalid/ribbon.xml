@@ -1,0 +1,7 @@
+<RibbonDiffXml>
+  <CommandDefinitions>
+    <CommandDefinition Id="new.account.Demo.Command">
+      <Actions />
+    </CommandDefinition>
+  </CommandDefinitions>
+</RibbonDiffXml>

@@ -1,0 +1,17 @@
+<form>
+  <tabs>
+    <tab>
+      <columns>
+        <column>
+          <sections>
+            <section>
+              <rows>
+                <row />
+              </rows>
+            </section>
+          </sections>
+        </column>
+      </columns>
+    </tab>
+  </tabs>
+</form>

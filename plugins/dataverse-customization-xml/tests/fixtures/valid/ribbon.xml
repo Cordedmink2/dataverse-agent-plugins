@@ -1,0 +1,36 @@
+<RibbonDiffXml>
+  <CustomActions>
+    <CustomAction Id="new.account.Demo.CustomAction"
+                  Location="Mscrm.Form.account.MainTab.Save.Controls._children" Sequence="45">
+      <CommandUIDefinition>
+        <Button Id="new.account.Demo.Button"
+                Command="new.account.Demo.Command"
+                LabelText="$LocLabels:new.account.Demo.LabelText"
+                Alt="$LocLabels:new.account.Demo.Alt"
+                Sequence="45" TemplateAlias="o1"
+                Image16by16="$webresource:new_icon.svg"
+                Image32by32="$webresource:new_icon.svg" />
+      </CommandUIDefinition>
+    </CustomAction>
+  </CustomActions>
+  <Templates><RibbonTemplates Id="Mscrm.Templates" /></Templates>
+  <CommandDefinitions>
+    <CommandDefinition Id="new.account.Demo.Command">
+      <EnableRules />
+      <DisplayRules />
+      <Actions>
+        <JavaScriptFunction Library="$webresource:new_script.js" FunctionName="Demo.run">
+          <CrmParameter Value="PrimaryControl" />
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+  </CommandDefinitions>
+  <LocLabels>
+    <LocLabel Id="new.account.Demo.LabelText">
+      <Titles><Title description="Demo" languagecode="1033" /></Titles>
+    </LocLabel>
+    <LocLabel Id="new.account.Demo.Alt">
+      <Titles><Title description="Demo" languagecode="1033" /></Titles>
+    </LocLabel>
+  </LocLabels>
+</RibbonDiffXml>
