@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0.0.0",
+  "properties": {
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "triggers": {
+        "Recurrence": { "type": "Recurrence" }
+      },
+      "actions": {
+        "Second_action": {
+          "type": "Compose",
+          "inputs": "x",
+          "runAfter": { "First_action": ["Done"] }
+        }
+      }
+    }
+  }
+}

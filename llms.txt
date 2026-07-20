@@ -9,6 +9,8 @@
 
 ## Docs
 
+### dataverse-customization-xml
+
 - [Repo README](README.md): marketplace overview, install, requirements
 - [Plugin README](plugins/dataverse-customization-xml/README.md): full setup for every consumer type
 - [SKILL.md](plugins/dataverse-customization-xml/SKILL.md): the agent skill — validation workflow, root-element→schema table, ribbon-button recipe, gotchas
@@ -16,6 +18,15 @@
 - [VS Code guide](plugins/dataverse-customization-xml/docs/vscode.md): editor-only setup, CI usage
 - [Debugging](plugins/dataverse-customization-xml/docs/debugging.md): setup failures, missing diagnostics, false positives
 - [Schema source](plugins/dataverse-customization-xml/schemas/SOURCE.md): where the Microsoft XSDs come from, refresh procedure
+
+### power-automate-cloud-flow
+
+- [Plugin README](plugins/power-automate-cloud-flow/README.md): install + setup for every consumer type
+- [SKILL.md](plugins/power-automate-cloud-flow/SKILL.md): the shape-vs-semantics split, what attaches, gotchas
+- [Codex guide](plugins/power-automate-cloud-flow/docs/codex.md): the `Test-Json` validation loop from non-Claude agents
+- [VS Code guide](plugins/power-automate-cloud-flow/docs/vscode.md): editor-only setup, CI usage
+- [Debugging](plugins/power-automate-cloud-flow/docs/debugging.md): setup failures, missing diagnostics
+- [Schema source](plugins/power-automate-cloud-flow/schemas/SOURCE.md): what the wrapper schema validates and why
 
 ## Optional
 

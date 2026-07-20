@@ -38,12 +38,23 @@ jobs:
       - name: End-to-end setup (fetch schemas + lemminx, stamp paths, self-check)
         run: ./plugins/dataverse-customization-xml/scripts/Install-Plugin.ps1
 
+      # node_modules is not committed; npm ci restores it deterministically from the lockfile.
+      # Caching it makes the setup step's npm ci a near-no-op on cache hit.
+      - name: Cache flow LSP node_modules
+        uses: actions/cache@v4
+        with:
+          path: plugins/power-automate-cloud-flow/node_modules
+          key: flow-lsp-${{ runner.os }}-${{ hashFiles('plugins/power-automate-cloud-flow/package-lock.json') }}
+
+      - name: End-to-end setup (install JSON language server, stamp paths, LSP self-check)
+        run: ./plugins/power-automate-cloud-flow/scripts/Install-Plugin.ps1
+
       # Version bounds on both modules are deliberate: a new major on the PowerShell Gallery
       # should not be able to turn CI red without a change in this repo.
       - name: Pester tests
         run: |
           Install-Module Pester -MinimumVersion 5.5.0 -MaximumVersion 6.99.99 -Force -SkipPublisherCheck
-          Invoke-Pester plugins/dataverse-customization-xml/tests -CI
+          Invoke-Pester plugins -CI
 
       - name: PSScriptAnalyzer
         run: |

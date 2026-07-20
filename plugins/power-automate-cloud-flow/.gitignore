@@ -1,0 +1,2 @@
+# Installed at setup by scripts/Install-JsonLanguageServer.ps1 (npm ci from the pinned package-lock.json)
+node_modules/
