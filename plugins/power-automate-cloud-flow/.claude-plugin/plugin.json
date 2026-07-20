@@ -1,0 +1,13 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "power-automate-cloud-flow",
+  "version": "1.0.0",
+  "description": "Schema-validated hand-editing of unpacked Power Automate solution cloud-flow JSON (Workflows/*.json) against a bundled clientdata/WDL wrapper schema, with live vscode-json-language-server LSP diagnostics.",
+  "author": {
+    "name": "Connor Parsons"
+  },
+  "homepage": "https://github.com/Cordedmink2/dataverse-agent-plugins",
+  "skills": [
+    "./"
+  ]
+}

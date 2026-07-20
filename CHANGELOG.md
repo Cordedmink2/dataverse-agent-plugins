@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- New plugin `power-automate-cloud-flow`: live schema validation of unpacked Power Automate
+  solution cloud-flow JSON (`Workflows/*.json`).
+  - Bundled draft-07 clientdata/WDL wrapper schema (structure only — connector `inputs` left
+    loose by design, since `OpenApiConnection` isn't in the public Logic Apps schema).
+  - Live `vscode-json-language-server` LSP diagnostics for Claude Code (and VS Code via
+    `json.schemas`); the server is `npm ci`-installed at setup, pinned in `package-lock.json`.
+  - One-shot `Install-Plugin.ps1` whose self-check drives the real LSP end-to-end
+    (`scripts/lsp-smoke.mjs`) and asserts the schema fires; `/power-automate-cloud-flow:setup`.
+  - Headless/CI structure checks via PowerShell's built-in `Test-Json` (no bespoke validator).
+  - Semantic linting (runAfter / connectionName resolution, hard-coded values) stays in the
+    `power-automate-flow-dev` skill; this plugin is the shape layer.
+
 ## 1.0.1 — 2026-07-16
 
 - Fix: installer no longer reports failure to CI-style hosts after a successful self-check

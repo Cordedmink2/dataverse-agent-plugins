@@ -12,6 +12,12 @@
       "source": "./plugins/dataverse-customization-xml",
       "description": "Schema-validated hand-editing of Dataverse customization XML (ribbon, sitemap, forms, FetchXML, charts and more) against the official Microsoft XSDs — standalone PowerShell validator plus live lemminx LSP diagnostics.",
       "category": "development"
+    },
+    {
+      "name": "power-automate-cloud-flow",
+      "source": "./plugins/power-automate-cloud-flow",
+      "description": "Schema-validated hand-editing of unpacked Power Automate solution cloud-flow JSON (Workflows/*.json) against a bundled clientdata/WDL wrapper schema, with live vscode-json-language-server LSP diagnostics.",
+      "category": "development"
     }
   ]
 }
