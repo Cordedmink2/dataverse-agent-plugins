@@ -40,8 +40,11 @@ $schemaPath = Join-Path $pluginRoot 'schemas' $schemaFile
 if (-not (Test-Path $schemaPath)) {
     throw "Schema not found: $schemaPath"
 }
-# A proper file URI, cross-platform (file:///C:/... on Windows, file:///home/... on POSIX).
-$schemaUri = ([uri](Resolve-Path $schemaPath).Path).AbsoluteUri
+# Build the file URI by hand (file:///C:/... on Windows, file:///home/... on POSIX). Do NOT use
+# [uri].AbsoluteUri: on Linux PowerShell it yields an empty string for a rooted POSIX path.
+$abs = (Resolve-Path $schemaPath).Path -replace '\\', '/'
+if ($abs -notmatch '^/') { $abs = "/$abs" }   # Windows drive path (C:/...) needs the leading slash
+$schemaUri = 'file://' + ($abs -replace ' ', '%20')
 
 $jsonBlock = [ordered]@{
     validate = [ordered]@{ enable = $true }

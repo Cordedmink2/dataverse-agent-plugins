@@ -21,14 +21,18 @@ import { dirname, join, resolve } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 const pluginRoot = resolve(here, '..');
 const serverEntry = join(pluginRoot, 'node_modules', 'vscode-langservers-extracted', 'lib', 'json-language-server', 'node', 'jsonServerMain.js');
-const schemaUri = pathToFileURL(join(pluginRoot, 'schemas', 'cloud-flow-clientdata.schema.json')).href;
 const fixturesDir = join(pluginRoot, 'tests', 'fixtures');
 
-// The schema settings the client hands the server (mirrors .lsp.json settings.json).
-const jsonSettings = {
-  validate: { enable: true },
-  schemas: [{ fileMatch: ['**/Workflows/*.json', '**/Workflows/**/*.json', '**/*.flow.json'], url: schemaUri }],
-};
+// Use the SHIPPED config: read the exact json settings the host will hand the server from
+// .lsp.json, so this check exercises the real (stamped) schema url, not a recomputed one. A
+// relative url (the committed, un-stamped form) is resolved to a file URI here so a standalone
+// run still works before setup has stamped it.
+const lsp = JSON.parse(readFileSync(join(pluginRoot, '.lsp.json'), 'utf8'));
+const jsonSettings = JSON.parse(JSON.stringify(lsp.json.settings.json)); // deep copy
+for (const s of jsonSettings.schemas || []) {
+  if (!/^(file|https?):\/\//.test(s.url)) s.url = pathToFileURL(resolve(pluginRoot, s.url)).href;
+}
+if (!jsonSettings.schemas?.[0]?.url) { console.error('.lsp.json has no schema url'); process.exit(3); }
 // initializationOptions mirrors .lsp.json: handledSchemaProtocols lets the server load file:// schemas.
 const initOptions = { provideFormatter: true, handledSchemaProtocols: ['file'], settings: { json: jsonSettings } };
 
