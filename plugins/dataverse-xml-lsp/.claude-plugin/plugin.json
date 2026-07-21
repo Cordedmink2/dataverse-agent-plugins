@@ -8,6 +8,7 @@
   },
   "homepage": "https://github.com/Cordedmink2/dataverse-agent-plugins",
   "skills": [
-    "./skills/dataverse-xml-lsp-setup"
+    "./skills/dataverse-xml-lsp-setup",
+    "./skills/dataverse-xml-validate"
   ]
 }
