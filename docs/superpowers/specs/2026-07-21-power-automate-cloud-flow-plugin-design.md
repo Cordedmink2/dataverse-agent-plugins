@@ -1,5 +1,7 @@
 # power-automate-cloud-flow — plugin design (retrospective)
 
+> **Historical — superseded by [`2026-07-21-lsp-only-plugin-rename-design.md`](2026-07-21-lsp-only-plugin-rename-design.md) (v2.0.0).** Kept as a dated record. This plugin was renamed to `cloud-flow-json-lsp` and its `/…:setup` command removed in the 2.0.0 LSP restructure.
+
 **Date:** 2026-07-21
 **Status:** Retrospective spec — documents shipped v1.0.0 (commit `fff8ff0`). Written after the fact to
 capture intended scope and to audit the build for sprawl.

@@ -1,5 +1,7 @@
 # dataverse-agent-plugins — public repo design
 
+> **Historical — superseded by [`2026-07-21-lsp-only-plugin-rename-design.md`](2026-07-21-lsp-only-plugin-rename-design.md) (v2.0.0).** Kept as a dated record. The plugin names (`dataverse-customization-xml`, `power-automate-cloud-flow`) and the `/<plugin>:setup` command described here changed in the 2.0.0 LSP restructure.
+
 **Date:** 2026-07-15
 **Status:** Approved design, pre-implementation
 **Author:** Connor Parsons
