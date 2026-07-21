@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Cordedmink2/dataverse-agent-plugins/cloud-flow-json-lsp/cloud-flow-clientdata.schema.json",
+  "title": "Power Automate solution cloud-flow clientdata",
+  "description": "Validates the JSON shape of an unpacked solution cloud flow (the file produced under Workflows/ by `pac solution unpack`). This is the flow's `clientdata`: a wrapper around the Workflow Definition Language `definition` plus its `connectionReferences`. The strict WDL action-type vocabulary is NOT enforced here on purpose — Power Automate connector actions (OpenApiConnection) aren't in the public Logic Apps schema, so a strict $ref would drown real errors in false positives. Structure is validated; `pac solution check` remains the authoritative validator for the packaged flow.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "properties": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["definition"],
+      "properties": {
+        "connectionReferences": {
+          "type": "object",
+          "description": "Map of local action-facing key -> connection-reference metadata. Verified real shape: { runtimeSource, connection: { connectionReferenceLogicalName }, api: { name } }. Each entry binds an action to a connectionreference solution component (solution-aware), not a raw connection. Kept loose — additional/legacy fields are tolerated.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "runtimeSource": { "type": "string", "description": "e.g. \"embedded\"" },
+              "connection": {
+                "type": "object",
+                "properties": {
+                  "connectionReferenceLogicalName": { "type": "string", "description": "logicalname of the connectionreference row in Dataverse — the ALM-portable link bound at import." },
+                  "name": { "type": "string", "description": "legacy: direct connection name" },
+                  "id": { "type": "string" }
+                }
+              },
+              "api": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "description": "connector, e.g. shared_commondataserviceforapps / shared_sharepointonline" }
+                }
+              }
+            }
+          }
+        },
+        "definition": {
+          "type": "object",
+          "description": "The Workflow Definition Language (WDL) body. Same dialect as Azure Logic Apps.",
+          "additionalProperties": true,
+          "required": ["$schema", "triggers", "actions"],
+          "properties": {
+            "$schema": {
+              "type": "string",
+              "description": "Should be the Logic Apps workflowdefinition schema URL.",
+              "pattern": "schema\\.management\\.azure\\.com/providers/Microsoft\\.Logic/schemas/.*workflowdefinition\\.json"
+            },
+            "contentVersion": { "type": "string" },
+            "parameters": {
+              "type": "object",
+              "description": "$connections / $authentication and any flow parameters.",
+              "additionalProperties": true
+            },
+            "triggers": {
+              "type": "object",
+              "description": "One or more triggers. Each has a `type` (e.g. OpenApiConnection, OpenApiConnectionWebhook, Request, Recurrence) and `inputs`.",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": { "type": "string" },
+                  "kind": { "type": "string" },
+                  "inputs": { "description": "Trigger inputs — usually an object, but left untyped to avoid false positives." }
+                },
+                "additionalProperties": true
+              }
+            },
+            "actions": {
+              "type": "object",
+              "description": "The action graph. Order is expressed via runAfter, NOT array position. Each action has a `type` and usually `inputs` + `runAfter`.",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "e.g. OpenApiConnection, Compose, Scope, If, Foreach, InitializeVariable, SetVariable, Http, Response, Terminate, Switch."
+                  },
+                  "inputs": { "description": "Action inputs. Type varies by action — e.g. Compose/Set/Append inputs can be a string, number, array or object — so left untyped to avoid false positives." },
+                  "runAfter": {
+                    "type": "object",
+                    "description": "Map of upstream-action-name -> array of statuses to run after (Succeeded / Failed / Skipped / TimedOut). Empty {} = runs first.",
+                    "additionalProperties": {
+                      "type": "array",
+                      "items": { "enum": ["Succeeded", "Failed", "Skipped", "TimedOut"] }
+                    }
+                  },
+                  "runtimeConfiguration": { "type": "object", "additionalProperties": true }
+                },
+                "additionalProperties": true
+              }
+            },
+            "outputs": { "type": "object", "additionalProperties": true }
+          }
+        }
+      }
+    },
+    "schemaVersion": { "type": "string" }
+  }
+}

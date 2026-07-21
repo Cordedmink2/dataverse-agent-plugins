@@ -1,0 +1,13 @@
+{
+  "json": {
+    "command": "node",
+    "args": [
+      "${CLAUDE_PLUGIN_ROOT}/scripts/lsp-launch.mjs",
+      "${CLAUDE_PLUGIN_ROOT}",
+      "--stdio"
+    ],
+    "extensionToLanguage": {
+      ".json": "json"
+    }
+  }
+}
