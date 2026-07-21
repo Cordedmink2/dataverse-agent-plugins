@@ -18,6 +18,7 @@ Describe 'usage skill + plugin skill registration (dataverse-xml-lsp)' {
             if ($script:lines[$i].Trim() -eq '---') { $fence += $i }
             if ($fence.Count -eq 2) { break }
         }
+        $script:fenceCount = $fence.Count
         $script:frontmatter = @{}
         if ($fence.Count -eq 2) {
             foreach ($line in $script:lines[($fence[0] + 1)..($fence[1] - 1)]) {
@@ -31,15 +32,21 @@ Describe 'usage skill + plugin skill registration (dataverse-xml-lsp)' {
         $script:skills = @($manifest.skills)
     }
 
+    It 'has a parseable YAML frontmatter block' {
+        $fenceCount | Should -Be 2 -Because 'SKILL.md must open with a --- ... --- frontmatter block'
+    }
+
     It 'name is dataverse-xml-validate' {
         $frontmatter['name'] | Should -Be 'dataverse-xml-validate'
     }
 
-    It 'has a non-empty description (auto-trigger)' {
+    It 'has a non-empty folded description (auto-trigger)' {
         ($script:lines -join "`n") | Should -Match 'description:\s*>-'
-        $descIdx = ($script:lines | Select-String -Pattern '^\s*description:' | Select-Object -First 1).LineNumber
-        $descIdx | Should -Not -BeNullOrEmpty
-        ($script:lines[$descIdx].Trim().Length) | Should -BeGreaterThan 0 -Because 'the folded description must have content on the next line'
+        $descLine = ($script:lines | Select-String -Pattern '^\s*description:' | Select-Object -First 1)
+        $descLine | Should -Not -BeNullOrEmpty
+        # The folded value sits on the line AFTER `description:`; require indented content there,
+        # so an empty block (description: >- immediately followed by ---) fails rather than passes.
+        $script:lines[$descLine.LineNumber] | Should -Match '^\s+\S' -Because 'the folded description must have indented content on the next line'
     }
 
     It 'points to docs/guide.md rather than duplicating it' {
