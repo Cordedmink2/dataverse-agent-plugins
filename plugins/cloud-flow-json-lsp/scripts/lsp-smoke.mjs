@@ -1,16 +1,17 @@
-// End-to-end health check for the flow LSP: launches vscode-json-language-server exactly as
-// .lsp.json does, feeds it the schema association the plugin ships, opens each test fixture under
-// a Workflows/ URI, and asserts the schema actually fires — valid fixtures yield 0 diagnostics,
-// invalid fixtures yield >= 1. Exit 0 = healthy, non-zero = broken install/schema/wiring.
+// End-to-end health check for the flow LSP. Launches the plugin exactly as .lsp.json does — via
+// the launcher shim (scripts/lsp-launch.mjs), which spawns vscode-json-language-server and injects
+// the bundled schema at runtime. Opens each test fixture under a Workflows/ URI and asserts the
+// schema actually fires: valid fixtures yield 0 diagnostics, invalid fixtures yield >= 1.
+// Exit 0 = healthy, non-zero = broken install/schema/wiring.
 //
-// It runs TWO scenarios so the check matches Claude Code's real mechanism, which is not fully
-// documented for the workspace/configuration pull:
-//   push - schemas provided ONLY via initializationOptions + workspace/didChangeConfiguration,
-//          with NO configuration capability advertised and pulls left unanswered. This is what
-//          the Claude Code docs describe ("settings passed via workspace/didChangeConfiguration").
-//   pull - configuration capability advertised and the server's workspace/configuration request
-//          answered. The alternative path some clients use.
-// Both must pass, so the plugin works regardless of which path the host actually uses.
+// The client here supplies NO schema of its own and answers any workspace/configuration pull that
+// reaches it with {} — so a firing schema can only have come from the shim. That both exercises
+// the real launch path and proves the shim resolves the schema without any stamped config.
+//
+// It runs TWO scenarios so the check matches whichever config-delivery path the host uses:
+//   push - no `configuration` capability advertised; pulls left unanswered by the client.
+//   pull - `configuration` capability advertised; any pull reaching the client answered with {}.
+// Both must pass.
 //
 // Usage: node scripts/lsp-smoke.mjs
 import { spawn } from 'node:child_process';
@@ -20,21 +21,8 @@ import { dirname, join, resolve } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pluginRoot = resolve(here, '..');
-const serverEntry = join(pluginRoot, 'node_modules', 'vscode-langservers-extracted', 'lib', 'json-language-server', 'node', 'jsonServerMain.js');
+const shim = join(here, 'lsp-launch.mjs');
 const fixturesDir = join(pluginRoot, 'tests', 'fixtures');
-
-// Use the SHIPPED config: read the exact json settings the host will hand the server from
-// .lsp.json, so this check exercises the real (stamped) schema url, not a recomputed one. A
-// relative url (the committed, un-stamped form) is resolved to a file URI here so a standalone
-// run still works before setup has stamped it.
-const lsp = JSON.parse(readFileSync(join(pluginRoot, '.lsp.json'), 'utf8'));
-const jsonSettings = JSON.parse(JSON.stringify(lsp.json.settings.json)); // deep copy
-for (const s of jsonSettings.schemas || []) {
-  if (!/^(file|https?):\/\//.test(s.url)) s.url = pathToFileURL(resolve(pluginRoot, s.url)).href;
-}
-if (!jsonSettings.schemas?.[0]?.url) { console.error('.lsp.json has no schema url'); process.exit(3); }
-// initializationOptions mirrors .lsp.json: handledSchemaProtocols lets the server load file:// schemas.
-const initOptions = { provideFormatter: true, handledSchemaProtocols: ['file'], settings: { json: jsonSettings } };
 
 function loadCases() {
   const cases = [];
@@ -47,11 +35,11 @@ function loadCases() {
   return cases;
 }
 
-// Run every fixture through a freshly-spawned server under the given config-delivery mode.
+// Run every fixture through a freshly-spawned shim under the given config-delivery mode.
 // Returns the number of failures.
 function runScenario(mode) {
-  const answerPulls = mode === 'pull';
-  const server = spawn(process.execPath, [serverEntry, '--stdio']);
+  const advertiseConfig = mode === 'pull';
+  const server = spawn(process.execPath, [shim, pluginRoot, '--stdio']);
   const diagnostics = new Map(); // uri -> diagnostics[]
   let buf = Buffer.alloc(0);
 
@@ -60,13 +48,9 @@ function runScenario(mode) {
     server.stdin.write(`Content-Length: ${Buffer.byteLength(s)}\r\n\r\n${s}`);
   };
   const handle = (msg) => {
-    if (msg.method === 'workspace/configuration') {
-      // In push mode, simulate a host that does NOT supply config via pull (empty results),
-      // proving the schema still arrives via initializationOptions + didChangeConfiguration.
-      const result = msg.params.items.map((it) => (answerPulls && it.section === 'json' ? jsonSettings : {}));
-      send({ id: msg.id, result });
-      return;
-    }
+    // The shim should intercept workspace/configuration; if one still reaches us, answer {} so the
+    // schema can only have come from the shim.
+    if (msg.method === 'workspace/configuration') { send({ id: msg.id, result: msg.params.items.map(() => ({})) }); return; }
     if (msg.id !== undefined && msg.method) { send({ id: msg.id, result: null }); return; } // ack other server requests
     if (msg.method === 'textDocument/publishDiagnostics') { diagnostics.set(msg.params.uri, msg.params.diagnostics || []); }
   };
@@ -94,13 +78,14 @@ function runScenario(mode) {
   });
 
   return (async () => {
-    const capabilities = answerPulls
+    const capabilities = advertiseConfig
       ? { workspace: { configuration: true, didChangeConfiguration: {} } }
-      : { workspace: { didChangeConfiguration: {} } }; // no `configuration` -> push model
-    send({ id: 1, method: 'initialize', params: { processId: process.pid, rootUri: pathToFileURL(pluginRoot).href, initializationOptions: initOptions, capabilities } });
+      : { workspace: { didChangeConfiguration: {} } };
+    // Deliberately supply NO schema: no initializationOptions.settings, empty didChangeConfiguration.
+    send({ id: 1, method: 'initialize', params: { processId: process.pid, rootUri: pathToFileURL(pluginRoot).href, capabilities } });
     await new Promise((r) => setTimeout(r, 300));
     send({ method: 'initialized', params: {} });
-    send({ method: 'workspace/didChangeConfiguration', params: { settings: { json: jsonSettings } } });
+    send({ method: 'workspace/didChangeConfiguration', params: { settings: {} } });
 
     let failures = 0;
     console.log(`\n[${mode}]`);

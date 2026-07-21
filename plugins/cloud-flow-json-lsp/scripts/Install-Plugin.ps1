@@ -1,13 +1,14 @@
 #requires -Version 7
 <#
 .SYNOPSIS
-    One-shot plugin setup: install the JSON language server, stamp the machine-local schema path,
-    run an end-to-end self-check.
+    One-shot plugin setup: install the JSON language server and run an end-to-end self-check.
 
 .DESCRIPTION
-    Idempotent - safe to re-run after /plugin update. The self-check drives the real LSP server
-    over stdio and confirms the bundled schema fires (valid fixtures clean, invalid fixtures flagged),
-    so a broken install fails here, not at first real use.
+    Idempotent - safe to re-run after /plugin update. Claude Code resolves the bundled schema at
+    launch via scripts/lsp-launch.mjs, so no machine-local path is ever stamped into .lsp.json.
+    The self-check drives that shim over stdio and confirms the schema fires (valid fixtures clean,
+    invalid fixtures flagged), so a broken install fails here, not at first real use.
+    Pass -UpdateVSCode to also wire the separate VS Code editor association.
 
 .EXAMPLE
     pwsh scripts/Install-Plugin.ps1
@@ -25,8 +26,9 @@ $ErrorActionPreference = 'Stop'
 Write-Host "== 1/3 JSON language server ==" -ForegroundColor Cyan
 & (Join-Path $PSScriptRoot 'Install-JsonLanguageServer.ps1')
 
-Write-Host "== 2/3 Path stamping ==" -ForegroundColor Cyan
-& (Join-Path $PSScriptRoot 'Set-LspSchemaPaths.ps1') -UpdateVSCode:$UpdateVSCode
+Write-Host "== 2/3 VS Code association (optional) ==" -ForegroundColor Cyan
+if ($UpdateVSCode) { & (Join-Path $PSScriptRoot 'Set-LspSchemaPaths.ps1') -UpdateVSCode }
+else { Write-Host "Skipped (Claude Code resolves the schema at launch via the shim; pass -UpdateVSCode to wire VS Code)." }
 
 Write-Host "== 3/3 Self-check (end-to-end LSP diagnostics) ==" -ForegroundColor Cyan
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {

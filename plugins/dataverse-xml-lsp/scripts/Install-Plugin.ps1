@@ -1,12 +1,14 @@
 #requires -Version 7
 <#
 .SYNOPSIS
-    One-shot plugin setup: fetch schemas + lemminx, stamp machine paths, run a self-check.
+    One-shot plugin setup: fetch schemas + lemminx and run a self-check.
 
 .DESCRIPTION
-    Idempotent - safe to re-run after /plugin update or a schema version bump.
-    The self-check validates a known-good and a known-bad fixture so a broken install fails
-    here, not at first real use.
+    Idempotent - safe to re-run after /plugin update or a schema version bump. Claude Code resolves
+    schemas and the lemminx binary at launch via scripts/lsp-launch.mjs, so no machine-local path
+    is ever stamped into .lsp.json. The self-check validates a known-good and a known-bad fixture
+    so a broken install fails here, not at first real use. Pass -UpdateVSCode to also wire the
+    separate VS Code editor associations.
 
 .EXAMPLE
     pwsh scripts/Install-Plugin.ps1
@@ -37,14 +39,9 @@ else {
     & (Join-Path $PSScriptRoot 'Get-Lemminx.ps1') @lemminxArgs
 }
 
-Write-Host "== 3/4 Path stamping ==" -ForegroundColor Cyan
-$binDir = Join-Path $pluginRoot 'bin'
-if ($SkipLemminx -and -not (Get-ChildItem $binDir -Filter 'lemminx*' -File -ErrorAction SilentlyContinue)) {
-    Write-Host "Skipped (no lemminx binary; validator-only setup)."
-}
-else {
-    & (Join-Path $PSScriptRoot 'Set-LspSchemaPaths.ps1') -UpdateVSCode:$UpdateVSCode
-}
+Write-Host "== 3/4 VS Code association (optional) ==" -ForegroundColor Cyan
+if ($UpdateVSCode) { & (Join-Path $PSScriptRoot 'Set-LspSchemaPaths.ps1') -UpdateVSCode }
+else { Write-Host "Skipped (Claude Code resolves schemas at launch via the shim; pass -UpdateVSCode to wire VS Code)." }
 
 Write-Host "== 4/4 Self-check ==" -ForegroundColor Cyan
 $validator = Join-Path $PSScriptRoot 'Validate-DataverseXml.ps1'

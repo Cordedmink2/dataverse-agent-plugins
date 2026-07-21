@@ -2,51 +2,12 @@
   "json": {
     "command": "node",
     "args": [
-      "${CLAUDE_PLUGIN_ROOT}/node_modules/vscode-langservers-extracted/lib/json-language-server/node/jsonServerMain.js",
+      "${CLAUDE_PLUGIN_ROOT}/scripts/lsp-launch.mjs",
+      "${CLAUDE_PLUGIN_ROOT}",
       "--stdio"
     ],
     "extensionToLanguage": {
       ".json": "json"
-    },
-    "initializationOptions": {
-      "provideFormatter": true,
-      "handledSchemaProtocols": [
-        "file"
-      ],
-      "settings": {
-        "json": {
-          "validate": {
-            "enable": true
-          },
-          "schemas": [
-            {
-              "fileMatch": [
-                "**/Workflows/*.json",
-                "**/Workflows/**/*.json",
-                "**/*.flow.json"
-              ],
-              "url": "schemas/cloud-flow-clientdata.schema.json"
-            }
-          ]
-        }
-      }
-    },
-    "settings": {
-      "json": {
-        "validate": {
-          "enable": true
-        },
-        "schemas": [
-          {
-            "fileMatch": [
-              "**/Workflows/*.json",
-              "**/Workflows/**/*.json",
-              "**/*.flow.json"
-            ],
-            "url": "schemas/cloud-flow-clientdata.schema.json"
-          }
-        ]
-      }
     }
   }
 }

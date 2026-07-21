@@ -1,91 +1,14 @@
 {
   "xml": {
-    "command": "${CLAUDE_PLUGIN_ROOT}/bin/lemminx-win32.exe",
+    "command": "node",
+    "args": [
+      "${CLAUDE_PLUGIN_ROOT}/scripts/lsp-launch.mjs",
+      "${CLAUDE_PLUGIN_ROOT}",
+      "--stdio"
+    ],
     "extensionToLanguage": {
       ".xml": "xml",
       ".fetchxml": "xml"
-    },
-    "initializationOptions": {
-      "settings": {
-        "xml": {
-          "validation": {
-            "enabled": true,
-            "schema": {
-              "enabled": "always"
-            }
-          },
-          "fileAssociations": [
-            {
-              "pattern": "**/RibbonDiff.xml",
-              "systemId": "schemas/9.0.0.2090/RibbonCore.xsd"
-            },
-            {
-              "pattern": "**/[Cc]ustomizations.xml",
-              "systemId": "schemas/9.0.0.2090/CustomizationsSolution.xsd"
-            },
-            {
-              "pattern": "**/SiteMap*.xml",
-              "systemId": "schemas/9.0.0.2090/SiteMap.xsd"
-            },
-            {
-              "pattern": "**/FormXml/**/*.xml",
-              "systemId": "schemas/9.0.0.2090/FormXml.xsd"
-            },
-            {
-              "pattern": "**/SavedQueries/**/*.xml",
-              "systemId": "schemas/9.0.0.2090/Fetch.xsd"
-            },
-            {
-              "pattern": "**/*.fetchxml",
-              "systemId": "schemas/9.0.0.2090/Fetch.xsd"
-            },
-            {
-              "pattern": "**/isv.config.xml",
-              "systemId": "schemas/9.0.0.2090/isv.config.xsd"
-            }
-          ]
-        }
-      }
-    },
-    "settings": {
-      "xml": {
-        "validation": {
-          "enabled": true,
-          "schema": {
-            "enabled": "always"
-          }
-        },
-        "fileAssociations": [
-          {
-            "pattern": "**/RibbonDiff.xml",
-            "systemId": "schemas/9.0.0.2090/RibbonCore.xsd"
-          },
-          {
-            "pattern": "**/[Cc]ustomizations.xml",
-            "systemId": "schemas/9.0.0.2090/CustomizationsSolution.xsd"
-          },
-          {
-            "pattern": "**/SiteMap*.xml",
-            "systemId": "schemas/9.0.0.2090/SiteMap.xsd"
-          },
-          {
-            "pattern": "**/FormXml/**/*.xml",
-            "systemId": "schemas/9.0.0.2090/FormXml.xsd"
-          },
-          {
-            "pattern": "**/SavedQueries/**/*.xml",
-            "systemId": "schemas/9.0.0.2090/Fetch.xsd"
-          },
-          {
-            "pattern": "**/*.fetchxml",
-            "systemId": "schemas/9.0.0.2090/Fetch.xsd"
-          },
-          {
-            "pattern": "**/isv.config.xml",
-            "systemId": "schemas/9.0.0.2090/isv.config.xsd"
-          }
-        ]
-      }
     }
   }
 }
