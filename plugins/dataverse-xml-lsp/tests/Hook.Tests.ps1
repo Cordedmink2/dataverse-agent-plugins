@@ -44,9 +44,12 @@ Describe 'wrapper hook gate (validate-wrapper.mjs)' {
         (Invoke-Hook (Join-Path $fixtures 'valid' 'ribbon.xml')).Exit | Should -Be 0
     }
 
-    It 'exits 0 for uppercase ImportExportXml (customizations.xml, LSP-owned)' {
+    It 'exits 0 for uppercase ImportExportXml even when the file is invalid (case-sensitive gate did not spawn)' {
         if (-not $haveNode) { Set-ItResult -Skipped -Because 'node not on PATH'; return }
-        (Invoke-Hook (Join-Path $fixtures 'valid' 'importexport.xml')).Exit | Should -Be 0
+        # invalid/importexport.xml has root <ImportExportXml> (uppercase, LSP-owned). An INVALID file
+        # exiting 0 proves the gate excluded it by case WITHOUT running the validator; a case-
+        # insensitive gate would have spawned it and returned 2.
+        (Invoke-Hook (Join-Path $fixtures 'invalid' 'importexport.xml')).Exit | Should -Be 0
     }
 
     It 'valid <root> fixture -> exit 0' -ForEach $ownedFixtures {

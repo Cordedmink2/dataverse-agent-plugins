@@ -26,6 +26,7 @@ function rootElement(file) {
     .replace(/<\?[\s\S]*?\?>/g, '')
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<!DOCTYPE[^>]*>/gi, '');
+  // Dataverse customization roots are unprefixed; a namespaced root (<ns:form>) is not expected.
   const m = cleaned.match(/<([A-Za-z_][\w.-]*)/);
   return m ? m[1] : null;
 }
@@ -37,7 +38,7 @@ if (!raw.trim()) process.exit(0);
 let evt;
 try { evt = JSON.parse(raw); } catch { process.exit(0); }
 
-const file = evt?.tool_input?.file_path ?? evt?.tool_output?.file_path;
+const file = evt?.tool_input?.file_path;
 if (!file || !/\.xml$/i.test(file)) process.exit(0);
 
 const root = rootElement(file);
