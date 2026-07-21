@@ -18,12 +18,12 @@ script after each edit.
 
    > When editing Dataverse customization XML (RibbonDiff.xml, SiteMap, FormXml,
    > Customizations.xml, FetchXML, charts), follow
-   > `<clone-path>/plugins/dataverse-xml-lsp/SKILL.md`, and after EVERY edit run:
+   > `<clone-path>/plugins/dataverse-xml-lsp/docs/guide.md`, and after EVERY edit run:
    > `pwsh <clone-path>/plugins/dataverse-xml-lsp/scripts/Validate-DataverseXml.ps1 <file>`
    > Non-zero exit = the edit is invalid; fix before pack/import.
 
 3. If your Codex setup supports skill folders, point it at
-   `plugins/dataverse-xml-lsp/` directly — SKILL.md has standard frontmatter.
+   `plugins/dataverse-xml-lsp/docs/guide.md` directly for the full editing guidance.
 
 ## The loop
 

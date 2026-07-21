@@ -5,6 +5,8 @@ customization XML** — ribbon buttons (`RibbonDiffXml`), app navigation (`SiteM
 (`FormXml`), FetchXML, charts, and the whole `Customizations.xml`. Malformed edits fail loud
 *before* `pac solution import`.
 
+**See [`docs/guide.md`](docs/guide.md) for editing guidance.**
+
 ## Two validation layers
 
 1. **Script (backbone)** — `pwsh scripts/Validate-DataverseXml.ps1 <file>`. Works from any

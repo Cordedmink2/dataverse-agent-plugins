@@ -13,14 +13,14 @@ explicitly after each edit. There is no bespoke validator script — PowerShell 
 
    > When editing an unpacked Power Automate solution cloud flow (`Workflows/*.json` — the flow
    > clientdata: WDL `definition` + `connectionReferences`), follow
-   > `<clone-path>/plugins/cloud-flow-json-lsp/SKILL.md`, and after EVERY edit run:
+   > `<clone-path>/plugins/cloud-flow-json-lsp/docs/guide.md`, and after EVERY edit run:
    > `Get-Content <file> -Raw | Test-Json -SchemaFile <clone-path>/plugins/cloud-flow-json-lsp/schemas/cloud-flow-clientdata.schema.json`
    > A schema error means the edit is structurally invalid; fix before pack/import. Then run the
    > `power-automate-flow-dev` skill's `flow-lint.ps1` for the semantic layer (runAfter /
    > connectionName resolution, hard-coded values).
 
-3. If your Codex setup supports skill folders, point it at `plugins/cloud-flow-json-lsp/`
-   directly — `SKILL.md` has standard frontmatter.
+3. If your Codex setup supports skill folders, point it at
+   `plugins/cloud-flow-json-lsp/docs/guide.md` directly for the full editing guidance.
 
 ## The loop
 

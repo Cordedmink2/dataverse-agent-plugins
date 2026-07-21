@@ -5,6 +5,8 @@ JSON** — the `Workflows/<name>-<guid>.json` files `pac solution unpack` produc
 clientdata: a WDL `definition` plus its `connectionReferences`). Malformed structure shows up as
 editor diagnostics *before* `pac solution import`.
 
+**See [`docs/guide.md`](docs/guide.md) for editing guidance.**
+
 This is the **shape** layer. Cross-node semantics (`runAfter` targets a real sibling, `connectionName`
 resolves, hard-coded env values) and the export/pack/import round-trip live in the
 `power-automate-flow-dev` skill. See `SKILL.md` for the split.
