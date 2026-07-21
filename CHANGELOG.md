@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.1.0 — 2026-07-21
+
+### dataverse-xml-lsp
+
+- Added a `dataverse-xml-validate` usage skill that auto-triggers on Dataverse customization XML and
+  surfaces the `Validate-DataverseXml.ps1` validator (with guidance on reading its indicative output),
+  including in headless / subagent / CI contexts where the LSP does not push diagnostics.
+- Added a `PostToolUse` hook that auto-runs the validator on edited files whose root is one of the
+  six validator-owned roots the LSP does not cover (`form`, `forms`, `datadefinition`,
+  `visualization`, `viewers`, `importexportxml`), surfacing failures to the agent.
+- The setup skill now carries `disable-model-invocation: true` and lives under
+  `skills/dataverse-xml-lsp-setup/` so it no longer competes during editing.
+
 ## 2.0.0 — 2026-07-21
 
 ### Changed (breaking)

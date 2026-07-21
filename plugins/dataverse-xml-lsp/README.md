@@ -50,6 +50,8 @@ validating silently against nothing.
 | Path | Purpose |
 |------|---------|
 | `skills/dataverse-xml-lsp-setup/SKILL.md` | Setup skill (runs `Install-Plugin.ps1`); `disable-model-invocation` so it never auto-triggers |
+| `skills/dataverse-xml-validate/SKILL.md` | Auto-triggering usage skill: surfaces the validator + how to read its output |
+| `hooks/validate-wrapper.mjs`, `hooks/hooks.json` | PostToolUse hook: auto-validates edited forms/charts/viewers/parameter/whole-customizations files the LSP doesn't cover |
 | `scripts/Install-Plugin.ps1` | One-shot setup: schemas + lemminx + self-check |
 | `scripts/Validate-DataverseXml.ps1` | Standalone validator — root-element → XSD, line/col errors, non-zero exit |
 | `scripts/Get-Schemas.ps1` | Download the official Microsoft XSDs into `schemas/<version>/` |

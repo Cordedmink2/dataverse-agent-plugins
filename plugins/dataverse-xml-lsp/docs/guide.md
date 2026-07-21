@@ -1,6 +1,6 @@
 # dataverse-xml-lsp — editing guide
 
-> This is the manual replacement for the old auto-loaded skill; the plugin no longer surfaces this automatically.
+> Full reference for the `dataverse-xml-validate` skill and the validation hook. The skill surfaces the validator automatically on Dataverse-XML work; this guide holds the root→schema table, the ribbon recipe, and the gotchas.
 
 ## Dataverse customization XML (schema-validated)
 
