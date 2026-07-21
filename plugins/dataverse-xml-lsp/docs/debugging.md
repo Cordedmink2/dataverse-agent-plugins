@@ -12,26 +12,17 @@
 
 ## No live diagnostics in Claude Code
 
-1. Did setup run? `.lsp.json` systemIds must be absolute paths that exist — committed state
-   is relative-on-purpose and does nothing.
-2. `${CLAUDE_PLUGIN_ROOT}` is only substituted in `.lsp.json` `command`/`args`, NOT in
-   settings — that's why `Set-LspSchemaPaths.ps1` exists. Re-run it (or the whole setup)
-   after moving the plugin.
-3. Run `/reload-plugins` (or restart the session) after stamping.
-4. lemminx only validates files inside a real workspace folder.
-5. Subagents and headless runs NEVER get LSP pushes — that's by design; they must run the
+Diagnostics work straight from the committed `.lsp.json`: it launches the shim
+(`scripts/lsp-launch.mjs`), which resolves the bundled XSDs at runtime from the plugin root — no
+stamped paths, so a plugin update or repo move does not break it. If squiggles don't appear:
+
+1. Is Node installed and on `PATH`? `.lsp.json` runs `node scripts/lsp-launch.mjs`; the shim
+   throws loudly if the XSDs or the lemminx binary are missing. Run
+   `pwsh scripts/Install-Plugin.ps1` to (re)fetch them.
+2. Run `/reload-plugins` (or restart the session).
+3. lemminx only validates files inside a real workspace folder.
+4. Subagents and headless runs NEVER get LSP pushes — that's by design; they must run the
    validator script.
-
-## After `/plugin update dataverse-xml-lsp@dataverse-agent-plugins`
-
-Setup stamps machine-absolute paths into the **tracked** `.lsp.json` inside the marketplace
-clone, so an update may conflict on that file or reset it to the committed relative paths.
-Re-running `/dataverse-xml-lsp:dataverse-xml-lsp-setup` after every plugin update is the documented
-fix — it re-stamps the paths and re-verifies the fetched assets.
-
-Contributors working in a clone of this repo: the installer dirties `.lsp.json` — don't
-commit the machine paths. `git update-index --skip-worktree plugins/dataverse-xml-lsp/.lsp.json`
-is one way to keep it out of your commits.
 
 ## No diagnostics in VS Code
 

@@ -22,10 +22,11 @@ customization XML** — ribbon buttons (`RibbonDiffXml`), app navigation (`SiteM
 /dataverse-xml-lsp:dataverse-xml-lsp-setup
 ```
 
-The setup command fetches the Microsoft XSDs and the lemminx binary, stamps this machine's
-absolute paths, and runs a self-check. It requires PowerShell 7+ (`pwsh`) — Windows ships
-only Windows PowerShell 5.1, and the scripts have `#requires -Version 7`. Then run
-`/reload-plugins` (or restart the session) so the LSP starts with the stamped paths.
+The setup command fetches the Microsoft XSDs and the lemminx binary and runs a self-check. It
+requires PowerShell 7+ (`pwsh`) — Windows ships only Windows PowerShell 5.1, and the scripts
+have `#requires -Version 7`. Then run `/reload-plugins` (or restart the session) so the LSP
+starts. The launcher shim resolves the bundled schema at runtime, so nothing machine-specific
+is stamped into `.lsp.json`.
 
 ## Setup script directly (non-Claude consumers)
 
@@ -40,20 +41,22 @@ pwsh scripts/Install-Plugin.ps1 [-UpdateVSCode] [-SkipLemminx] [-TargetPlatform 
   agents).
 - `-TargetPlatform` overrides the auto-detected OS/arch for the lemminx download.
 
-Run this one script rather than the individual `Get-*`/`Set-*` scripts — a partial manual setup
-can leave a running lemminx pointing at broken relative schema paths.
+Run this one script rather than the individual `Get-*` scripts — a partial manual setup can
+leave the XSDs or the lemminx binary missing, so the launcher shim throws at startup instead of
+validating silently against nothing.
 
 ## What's inside
 
 | Path | Purpose |
 |------|---------|
 | `SKILL.md` | Tiny no-description setup skill (runs `Install-Plugin.ps1`) |
-| `scripts/Install-Plugin.ps1` | One-shot setup: schemas + lemminx + path stamping + self-check |
+| `scripts/Install-Plugin.ps1` | One-shot setup: schemas + lemminx + self-check |
 | `scripts/Validate-DataverseXml.ps1` | Standalone validator — root-element → XSD, line/col errors, non-zero exit |
 | `scripts/Get-Schemas.ps1` | Download the official Microsoft XSDs into `schemas/<version>/` |
 | `scripts/Get-Lemminx.ps1` | Download the native lemminx binary into `bin/` (SHA256-verified) |
-| `scripts/Set-LspSchemaPaths.ps1` | Stamp this machine's absolute schema paths into `.lsp.json` (+ VS Code) |
-| `.lsp.json` | Registers lemminx with Claude Code, with XSD `fileAssociations` |
+| `scripts/lsp-launch.mjs` | Launcher shim — spawns lemminx and injects the bundled XSD associations at runtime |
+| `scripts/Set-LspSchemaPaths.ps1` | Write the XSD associations into VS Code user settings (`-UpdateVSCode`; Claude Code uses the shim instead) |
+| `.lsp.json` | Launches lemminx via the shim, which resolves the bundled XSDs at runtime — no stamped paths |
 | `versions.json` | Pinned schema version/URL and lemminx (vscode-xml) version |
 | `schemas/SOURCE.md` | Where the XSDs come from and how to bump the version |
 | `tests/` | Pester suite + valid/invalid fixtures for every mapped root |
@@ -71,9 +74,10 @@ platform-specific.
 /dataverse-xml-lsp:dataverse-xml-lsp-setup
 ```
 
-Re-run setup after every update — it re-stamps paths and re-checks the fetched assets (see
-`docs/debugging.md` for why). Schema-version bumps are driven by `versions.json`; the procedure
-is in `schemas/SOURCE.md`.
+The launcher shim resolves the bundled schema at runtime, so `.lsp.json` is portable — you do
+**not** need to re-run setup after a plugin update or a repo move. Re-run it only when an update
+bumps the pinned schema/lemminx version and you need the new assets fetched. Schema-version bumps
+are driven by `versions.json`; the procedure is in `schemas/SOURCE.md`.
 
 ## Other consumers
 
@@ -91,7 +95,8 @@ Something not working? [`docs/debugging.md`](docs/debugging.md).
   SiteMap fragment validation is authoritative; FormXml is indicative (the schema lags modern
   form attributes like `headerdensity`, `contenttype`).
 - **`${CLAUDE_PLUGIN_ROOT}` is only substituted in `.lsp.json` `command`/`args`**, not in nested
-  `settings` — hence the absolute-path fixup script.
+  `settings` — which is why the launcher shim (`scripts/lsp-launch.mjs`), handed the plugin root
+  as an argv, injects the XSD associations at runtime instead of `.lsp.json` carrying them.
 
 ## License
 

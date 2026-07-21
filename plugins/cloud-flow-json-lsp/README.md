@@ -29,10 +29,10 @@ the LSP loads.
 /cloud-flow-json-lsp:cloud-flow-json-lsp-setup
 ```
 
-The setup command installs the pinned JSON language server (`npm ci`), stamps this machine's
-absolute schema path into `.lsp.json`, and runs an end-to-end self-check that drives the real server.
-It requires PowerShell 7+ (`pwsh`) and Node.js (for `npm`/`node`). Then run `/reload-plugins` (or
-restart the session) so the LSP starts with the stamped path.
+The setup command installs the pinned JSON language server (`npm ci`) and runs an end-to-end
+self-check that drives the real server. It requires PowerShell 7+ (`pwsh`) and Node.js (for
+`npm`/`node`). Then run `/reload-plugins` (or restart the session) so the LSP starts. The launcher
+shim resolves the bundled schema at runtime, so nothing machine-specific is stamped into `.lsp.json`.
 
 ## Setup script directly (non-Claude consumers)
 
@@ -44,19 +44,21 @@ pwsh scripts/Install-Plugin.ps1 [-UpdateVSCode]
 
 - `-UpdateVSCode` also writes the `json.schemas` association into your VS Code user settings.
 
-Run this one script rather than the individual `Install-*`/`Set-*` scripts — a partial manual setup
-can leave a running server pointing at a broken relative schema path.
+Run this one script rather than the individual `Install-*` scripts — a partial manual setup can
+leave `node_modules/` or the schema missing, so the launcher shim throws at startup instead of
+validating silently against nothing.
 
 ## What's inside
 
 | Path | Purpose |
 |------|---------|
 | `SKILL.md` | Tiny no-description setup skill (runs `Install-Plugin.ps1`) |
-| `scripts/Install-Plugin.ps1` | One-shot setup: server install + path stamping + self-check |
+| `scripts/Install-Plugin.ps1` | One-shot setup: server install + self-check |
 | `scripts/Install-JsonLanguageServer.ps1` | `npm ci` the pinned JSON language server into `node_modules/` |
-| `scripts/Set-LspSchemaPaths.ps1` | Stamp this machine's absolute schema `file://` URI into `.lsp.json` (+ VS Code) |
+| `scripts/lsp-launch.mjs` | Launcher shim — spawns the JSON server and injects the bundled schema association at runtime |
+| `scripts/Set-LspSchemaPaths.ps1` | Write the `json.schemas` association into VS Code user settings (`-UpdateVSCode`; Claude Code uses the shim instead) |
 | `scripts/lsp-smoke.mjs` | End-to-end LSP health check (drives the server, asserts the schema fires) |
-| `.lsp.json` | Registers the JSON server with Claude Code, with the flow `json.schemas` association |
+| `.lsp.json` | Launches the JSON server via the shim, which resolves the bundled schema at runtime — no stamped path |
 | `package.json` / `package-lock.json` | Pin the JSON language server version |
 | `schemas/cloud-flow-clientdata.schema.json` | The bundled draft-07 wrapper schema |
 | `schemas/SOURCE.md` | What the schema validates, what it deliberately doesn't, how to refresh |
@@ -74,8 +76,9 @@ hand-maintained and committed.
 /cloud-flow-json-lsp:cloud-flow-json-lsp-setup
 ```
 
-Re-run setup after every update — it re-installs the pinned server and re-stamps the schema path (see
-`docs/debugging.md` for why).
+The launcher shim resolves the bundled schema at runtime, so `.lsp.json` is portable — you do
+**not** need to re-run setup after a plugin update or a repo move. Re-run it only when an update
+bumps the pinned server version and you need the new `node_modules/` installed.
 
 ## Other consumers
 
@@ -92,7 +95,8 @@ Something not working? [`docs/debugging.md`](docs/debugging.md).
   in Microsoft's public Logic Apps schema, so a strict `$ref` would produce more false positives than
   real findings. Structure is validated; `pac solution check` / a successful import is authoritative.
 - **`${CLAUDE_PLUGIN_ROOT}` is only substituted in `.lsp.json` `command`/`args`**, not in nested
-  `settings` — hence the absolute-path fixup script.
+  `settings` — which is why the launcher shim (`scripts/lsp-launch.mjs`), handed the plugin root
+  as an argv, injects the schema association at runtime instead of `.lsp.json` carrying it.
 
 ## License
 

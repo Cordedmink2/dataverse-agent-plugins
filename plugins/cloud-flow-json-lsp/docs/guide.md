@@ -28,9 +28,9 @@ The JSON language server is a Node package fetched via npm; it is not committed.
 ```
 
 or directly `pwsh "${CLAUDE_PLUGIN_ROOT}/scripts/Install-Plugin.ps1"`. That installs the pinned server
-(`npm ci`), stamps the machine-local absolute schema path into `.lsp.json` (because
-`${CLAUDE_PLUGIN_ROOT}` is not substituted inside LSP `settings`), and runs an end-to-end self-check
-that drives the real server and confirms the schema fires. Then `/reload-plugins`.
+(`npm ci`) and runs an end-to-end self-check that drives the real server and confirms the schema
+fires. The launcher shim (`scripts/lsp-launch.mjs`) resolves the bundled schema's absolute `file://`
+URI at runtime, so nothing is stamped into `.lsp.json`. Then `/reload-plugins`.
 
 ## What attaches to what
 
@@ -60,9 +60,10 @@ Get-Content <flow>.json -Raw | Test-Json -SchemaFile "${CLAUDE_PLUGIN_ROOT}/sche
   drown real errors in false positives. `inputs` is left untyped; structure is what's validated.
   `pac solution check` / a successful import remains the authoritative gate.
 - **`${CLAUDE_PLUGIN_ROOT}` is not substituted** inside `.lsp.json` `initializationOptions`/`settings`
-  — only in `command`/`args`. The schema `url` there is an absolute `file://` URI. On a new machine
-  (or after a plugin update / move), re-run `/cloud-flow-json-lsp:cloud-flow-json-lsp-setup` — or
-  `scripts/Set-LspSchemaPaths.ps1` alone — to re-stamp it.
+  — only in `command`/`args`. That's why the launcher shim (`scripts/lsp-launch.mjs`), handed the
+  plugin root as an argv, injects the schema association at runtime, computing an absolute `file://`
+  URI. `.lsp.json` carries no path, so it stays portable — no re-stamp is needed after a plugin
+  update or a repo move.
 - **The JSON server validates a document only after answering its `workspace/configuration` pull.**
   Claude Code and VS Code both handle that; a bare LSP client must too (see `scripts/lsp-smoke.mjs`
   for a reference client).

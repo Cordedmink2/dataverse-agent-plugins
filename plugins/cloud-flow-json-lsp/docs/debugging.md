@@ -13,28 +13,21 @@
 
 ## No live diagnostics in Claude Code
 
-1. Did setup run? The `.lsp.json` schema `url` must be an absolute `file://` URI that exists —
-   committed state is a relative path on purpose and does nothing until stamped.
-2. `${CLAUDE_PLUGIN_ROOT}` is only substituted in `.lsp.json` `command`/`args`, NOT in `settings` —
-   that's why `Set-LspSchemaPaths.ps1` exists. Re-run it (or the whole setup) after moving the plugin.
-3. Run `/reload-plugins` (or restart the session) after stamping.
-4. The file must match an association glob: `**/Workflows/*.json`, `**/Workflows/**/*.json`, or
+Diagnostics work straight from the committed `.lsp.json`: it launches the shim
+(`scripts/lsp-launch.mjs`), which resolves the bundled schema's absolute `file://` URI at runtime
+from the plugin root — no stamped path, so a plugin update or repo move does not break it. If
+squiggles don't appear:
+
+1. Are Node and the pinned server installed? `.lsp.json` runs `node scripts/lsp-launch.mjs`; the
+   shim throws loudly if `node_modules/` or the schema are missing. Run
+   `pwsh scripts/Install-Plugin.ps1` to (re)install them.
+2. Run `/reload-plugins` (or restart the session).
+3. The file must match an association glob: `**/Workflows/*.json`, `**/Workflows/**/*.json`, or
    `**/*.flow.json`. A flow JSON opened outside a `Workflows/` folder and not named `*.flow.json`
    gets no schema.
-5. The server validates a document only after answering its `workspace/configuration` pull — Claude
+4. The server validates a document only after answering its `workspace/configuration` pull — Claude
    Code handles that; a bare LSP client must too (see `scripts/lsp-smoke.mjs`).
-6. Subagents and headless runs NEVER get LSP pushes — that's by design; validate with `Test-Json`.
-
-## After `/plugin update cloud-flow-json-lsp@dataverse-agent-plugins`
-
-Setup stamps a machine-absolute schema path into the **tracked** `.lsp.json` inside the marketplace
-clone, so an update may conflict on that file or reset it to the committed relative path. Re-running
-`/cloud-flow-json-lsp:cloud-flow-json-lsp-setup` after every plugin update is the documented fix — it re-installs
-the pinned server and re-stamps the path.
-
-Contributors working in a clone: the installer dirties `.lsp.json` — don't commit the machine path.
-`git update-index --skip-worktree plugins/cloud-flow-json-lsp/.lsp.json` keeps it out of your
-commits.
+5. Subagents and headless runs NEVER get LSP pushes — that's by design; validate with `Test-Json`.
 
 ## No diagnostics in VS Code
 

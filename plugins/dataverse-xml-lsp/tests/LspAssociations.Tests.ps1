@@ -59,3 +59,61 @@ Describe 'XML LSP is not associated to validator-owned wrapper roots' {
         $hit | Should -BeNullOrEmpty -Because "no LSP association may match a pac <forms> wrapper file ($formsWrapper); lemminx would false-positive on the <forms> root. Matched: $($hit -join ', ')"
     }
 }
+
+Describe 'VS Code association map is not associated to validator-owned wrapper roots' {
+    # The RedHat XML extension is a SEPARATE consumer wired by Set-LspSchemaPaths.ps1 -UpdateVSCode.
+    # It must exclude the same forms/chart wrapper roots the shim does, or -UpdateVSCode would
+    # re-introduce the <forms>/<visualization> false-positive lemminx avoids.
+
+    BeforeAll {
+        $pluginRoot = Split-Path $PSScriptRoot -Parent
+        $stampScript = Join-Path $pluginRoot 'scripts' 'Set-LspSchemaPaths.ps1'
+
+        # Parse the `$assoc = [ordered]@{ ... }` hashtable straight out of the script via the AST
+        # (robust to formatting), then read the literal glob -> XSD string pairs.
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($stampScript, [ref]$null, [ref]$null)
+        $assign = $ast.Find({
+                param($n)
+                $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $n.Left.Extent.Text -eq '$assoc'
+            }, $true)
+        $hashAst = $assign.Right.Find({
+                param($n) $n -is [System.Management.Automation.Language.HashtableAst]
+            }, $true)
+        $script:vsAssoc = @{}
+        foreach ($pair in $hashAst.KeyValuePairs) {
+            $k = $pair.Item1.Extent.Text.Trim("'`"")
+            $v = $pair.Item2.Extent.Text.Trim("'`"")
+            $script:vsAssoc[$k] = $v
+        }
+
+        # Minimal glob -> regex (supports **, *, and character classes like [Cc]); paths use '/'.
+        function Test-GlobMatch([string]$Glob, [string]$Path) {
+            $rx = [regex]::Escape($Glob)
+            $rx = $rx -replace '\\\*\\\*/', '(?:.*/)?'
+            $rx = $rx -replace '\\\*\\\*', '.*'
+            $rx = $rx -replace '\\\*', '[^/]*'
+            $rx = $rx -replace '\\\[', '['
+            $rx = $rx -replace '\\\]', ']'
+            return [regex]::IsMatch($Path, "^$rx$")
+        }
+        $script:matcher = ${function:Test-GlobMatch}
+        $script:formsWrapper = 'src/Entities/account/FormXml/main/00000000-0000-0000-0000-000000000000.xml'
+    }
+
+    It 'parses a non-empty association map from Set-LspSchemaPaths.ps1' {
+        $vsAssoc.Count | Should -BeGreaterThan 0
+    }
+
+    It 'does not associate the visualization/chart wrapper (validator-owned)' {
+        $vsAssoc.Values | Should -Not -Contain 'VisualizationDataDescription.xsd'
+    }
+
+    It 'does not associate pac forms wrapper files (validator-owned)' {
+        $hit = @()
+        foreach ($glob in $vsAssoc.Keys) {
+            if (& $matcher $glob $formsWrapper) { $hit += "$glob -> $($vsAssoc[$glob])" }
+        }
+        $hit | Should -BeNullOrEmpty -Because "no VS Code association may match a pac <forms> wrapper file ($formsWrapper); the RedHat XML extension would false-positive on the <forms> root. Matched: $($hit -join ', ')"
+    }
+}

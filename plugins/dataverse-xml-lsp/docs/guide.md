@@ -122,9 +122,9 @@ pack/import mechanics.
 - **The ultimate structural gate is `pac solution pack`** — it runs SolutionPackager's own
   validation. If it packs, the solution is structurally sound for import.
 - **`${CLAUDE_PLUGIN_ROOT}` is not substituted** inside `.lsp.json` `initializationOptions`/
-  `settings` — only in `command`/`args`. Schema `systemId`s there use absolute paths. On a new
-  machine (or after a plugin update), run `/dataverse-xml-lsp:dataverse-xml-lsp-setup` — or
-  `scripts/Set-LspSchemaPaths.ps1` alone — to re-stamp them (and VS Code settings).
+  `settings` — only in `command`/`args`. That's why the launcher shim (`scripts/lsp-launch.mjs`),
+  handed the plugin root as an argv, injects the XSD associations at runtime. `.lsp.json` carries no
+  paths, so it stays portable — no re-stamp is needed after a plugin update or a repo move.
 - lemminx validates a document only inside a real workspace and after answering its
   `workspace/configuration` pull — Claude Code and VS Code both handle that; a bare LSP client
   must too.
@@ -132,5 +132,6 @@ pack/import mechanics.
 ## Refreshing the schemas
 
 To move to a newer schema release: update `schemaVersion` (and `schemasZipUrl` if Microsoft
-publishes a new link) in `versions.json`, run `pwsh scripts/Get-Schemas.ps1 -Force`, run
-`pwsh scripts/Set-LspSchemaPaths.ps1`, then run the test suite. Details in `schemas/SOURCE.md`.
+publishes a new link) in `versions.json`, run `pwsh scripts/Get-Schemas.ps1 -Force`, then run the
+test suite. The launcher shim reads `schemaVersion` from `versions.json` at launch, so it picks up
+the new schema dir with no re-stamp. Details in `schemas/SOURCE.md`.

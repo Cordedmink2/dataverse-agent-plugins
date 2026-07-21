@@ -35,7 +35,7 @@ jobs:
           path: plugins/dataverse-xml-lsp/bin
           key: lemminx-${{ runner.os }}-${{ hashFiles('plugins/dataverse-xml-lsp/versions.json') }}
 
-      - name: End-to-end setup (fetch schemas + lemminx, stamp paths, self-check)
+      - name: End-to-end setup (fetch schemas + lemminx, self-check)
         run: ./plugins/dataverse-xml-lsp/scripts/Install-Plugin.ps1
 
       # node_modules is not committed; npm ci restores it deterministically from the lockfile.
@@ -46,7 +46,7 @@ jobs:
           path: plugins/cloud-flow-json-lsp/node_modules
           key: flow-lsp-${{ runner.os }}-${{ hashFiles('plugins/cloud-flow-json-lsp/package-lock.json') }}
 
-      - name: End-to-end setup (install JSON language server, stamp paths, LSP self-check)
+      - name: End-to-end setup (install JSON language server, LSP self-check)
         run: ./plugins/cloud-flow-json-lsp/scripts/Install-Plugin.ps1
 
       # Version bounds on both modules are deliberate: a new major on the PowerShell Gallery

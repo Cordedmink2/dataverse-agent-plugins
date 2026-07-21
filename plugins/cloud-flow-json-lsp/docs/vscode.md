@@ -33,5 +33,6 @@ Get-Content <flow>.json -Raw | Test-Json -SchemaFile plugins/cloud-flow-json-lsp
 - The script writes `settings.json.bak` next to your settings before every write — the `.bak` is
   from the **last** run, not the original.
 - Only the stable VS Code settings path is auto-detected. VS Code Insiders / VSCodium users: run the
-  script anyway, then copy the stamped entry from the plugin's `.lsp.json`
-  (`json.schemas`) into your editor's `settings.json`.
+  script anyway (it targets the stable settings path), then copy the `json.schemas` entry it wrote
+  into your editor's own `settings.json`. That entry comes from `Set-LspSchemaPaths.ps1`, not from
+  `.lsp.json` (which carries no schema entry — the Claude Code launcher shim injects it at runtime).

@@ -38,15 +38,15 @@ if (-not $SchemaVersion) {
 }
 $schemaDir = Join-Path $pluginRoot 'schemas' $SchemaVersion
 
-# pattern -> schema filename. Charts have no association: their <visualization> wrapper root
-# is not declared in the XSD, so whole-file LSP validation would only produce a false error;
-# the validator script extracts and validates the inner <datadefinition> instead. Kept in sync
-# with the associations the shim (scripts/lsp-launch.mjs) injects for Claude Code.
+# pattern -> schema filename. Charts (<visualization>) AND forms (<forms>) have no association on
+# purpose: they are pac WRAPPER files whose root the XSD doesn't declare, so whole-file validation
+# would only produce a false error on the wrapper root. The validator (Validate-DataverseXml.ps1)
+# owns them via per-fragment extraction (systemform/form, datadescription/datadefinition). Kept in
+# sync with the associations the shim (scripts/lsp-launch.mjs) injects for Claude Code.
 $assoc = [ordered]@{
     '**/RibbonDiff.xml'        = 'RibbonCore.xsd'
     '**/[Cc]ustomizations.xml' = 'CustomizationsSolution.xsd'
     '**/SiteMap*.xml'          = 'SiteMap.xsd'
-    '**/FormXml/**/*.xml'      = 'FormXml.xsd'
     '**/SavedQueries/**/*.xml' = 'Fetch.xsd'
     '**/*.fetchxml'            = 'Fetch.xsd'
     '**/isv.config.xml'        = 'isv.config.xsd'

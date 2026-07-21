@@ -29,5 +29,7 @@ that schema. The whole monolithic `customizations.xml` (root `ImportExportXml`) 
 None of the schemas declare a `targetNamespace`, so the XML uses unqualified element names.
 
 To move to a newer schema release: update `schemaVersion` (and `schemasZipUrl` if Microsoft
-publishes a new link) in `versions.json`, run `pwsh scripts/Get-Schemas.ps1 -Force`, run
-`pwsh scripts/Set-LspSchemaPaths.ps1`, then run the test suite.
+publishes a new link) in `versions.json`, run `pwsh scripts/Get-Schemas.ps1 -Force`, then run the
+test suite. The launcher shim reads `schemaVersion` from `versions.json` at launch, so it picks up
+the new schema dir automatically — no re-stamp. (For VS Code users, re-run
+`pwsh scripts/Set-LspSchemaPaths.ps1 -UpdateVSCode` to repoint their settings at the new dir.)
