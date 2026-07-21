@@ -34,12 +34,14 @@ const bins = readdirSync(binDir).filter((f) => f.startsWith('lemminx'));
 if (bins.length !== 1) throw new Error(`lsp-launch: expected exactly one lemminx binary in ${binDir}, found ${bins.length}. Run scripts/Get-Lemminx.ps1.`);
 const serverExe = join(binDir, bins[0]);
 
-// pattern -> XSD filename. Charts have no association on purpose (see Set-LspSchemaPaths.ps1).
+// pattern -> XSD filename. Charts (<visualization>) AND forms (<forms>) have no association on
+// purpose: they are pac WRAPPER files whose root the XSD doesn't declare, so lemminx would
+// false-positive on the wrapper root. The validator (Validate-DataverseXml.ps1) owns them, via
+// per-fragment extraction (systemform/form, datadescription/datadefinition).
 const assoc = {
   '**/RibbonDiff.xml': 'RibbonCore.xsd',
   '**/[Cc]ustomizations.xml': 'CustomizationsSolution.xsd',
   '**/SiteMap*.xml': 'SiteMap.xsd',
-  '**/FormXml/**/*.xml': 'FormXml.xsd',
   '**/SavedQueries/**/*.xml': 'Fetch.xsd',
   '**/*.fetchxml': 'Fetch.xsd',
   '**/isv.config.xml': 'isv.config.xsd',
