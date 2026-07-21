@@ -208,3 +208,55 @@ Parked for a later, additive change once the LSP core is solid:
 - A `PostToolUse` **hook** that auto-runs a validator on matching edits — pending an empirical check
   that such hooks fire in subagents/headless, and mindful of main-session overlap with the LSP
   (which is exactly why it's deferred, not adopted, here).
+
+## Spike result (2026-07-21)
+
+**Decision: GO — Option 1 (launcher shim) for BOTH servers.** No hosted-URL fallback needed.
+
+A throwaway node shim was prototyped for each server. It takes the plugin root as an argv
+(the value Claude Code substitutes into `.lsp.json` `command`/`args` from `${CLAUDE_PLUGIN_ROOT}`),
+spawns the real server, proxies LSP stdio, and injects the schema association at runtime — computing
+the absolute `file://` schema path from the passed root. Nothing is stamped into any committed file.
+
+The injection is applied in three places (the third turned out to be essential): the forwarded
+`initialize` (`initializationOptions.settings`), any client `workspace/didChangeConfiguration`
+(re-inserting the schema so an empty client push can't clear it), and by directly answering the
+server's `workspace/configuration` pull. It was driven by a stand-in client (based on
+`scripts/lsp-smoke.mjs`) launched from a **non-plugin cwd**; the client itself supplied **no** schema
+and answered any config pull with `{}`, so a firing schema can only have come from the shim.
+
+### JSON (vscode-json-language-server) — PASS
+
+```
+[json] driven from cwd=…\scratchpad
+  PASS valid Workflows/case-valid-simple-flow.json -> 0 diagnostic(s)
+  PASS invalid Workflows/case-invalid-missing-definition.json -> 1 diagnostic(s) | first: Missing property "definition".
+  PASS invalid Workflows/case-invalid-bad-runafter-status.json -> 1 diagnostic(s) | first: Value is not accepted. Valid values: "Succeeded", "Failed", "Skipped", "TimedOut".
+  client-side config pull seen (should be false): false
+
+json shim: all cases PASSED
+```
+
+### XML (lemminx native binary `lemminx-win32.exe`) — PASS
+
+```
+[xml] driven from cwd=…\scratchpad
+  PASS valid v/RibbonDiff.xml -> 0 diagnostic(s)
+  PASS invalid i/RibbonDiff.xml -> 1 diagnostic(s) | first: Element name 'Actions' is invalid.
+  One of the following is expected:
+   - EnableRules
+  Error indicated by:
+   {the schema}
+  client-side config pull seen (should be false): false
+
+xml shim: all cases PASSED
+```
+
+The XML error (`{the schema}` / "expected: EnableRules") is XSD-derived, proving `RibbonCore.xsd`
+attached via the shim-injected `xml.fileAssociations` (absolute `systemId` computed at runtime).
+Both results were stable across repeated runs. lemminx is a self-contained native image here — no
+separate Java runtime was needed.
+
+**Consequence for the design:** the committed `.lsp.json` for both plugins can carry portable,
+relative schema references (or none) with no machine-local path; the shim removes the post-update
+re-stamping step entirely. The setup skill's stamping responsibility can therefore be dropped.
