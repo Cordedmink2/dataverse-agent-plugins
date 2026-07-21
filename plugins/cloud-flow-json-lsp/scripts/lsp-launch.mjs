@@ -12,6 +12,7 @@
 //
 // Usage: node lsp-launch.mjs <pluginRoot> [--stdio]
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -19,7 +20,12 @@ const pluginRoot = process.argv[2];
 if (!pluginRoot) throw new Error('lsp-launch: missing plugin root argument');
 
 const serverEntry = join(pluginRoot, 'node_modules', 'vscode-langservers-extracted', 'lib', 'json-language-server', 'node', 'jsonServerMain.js');
-const schemaUrl = pathToFileURL(join(pluginRoot, 'schemas', 'cloud-flow-clientdata.schema.json')).href;
+
+// Fail loud if the bundled schema is missing (e.g. a partial install): the server would otherwise
+// launch and silently validate nothing.
+const schemaPath = join(pluginRoot, 'schemas', 'cloud-flow-clientdata.schema.json');
+if (!existsSync(schemaPath)) throw new Error(`lsp-launch: schema not found: ${schemaPath}. Run scripts/Install-Plugin.ps1.`);
+const schemaUrl = pathToFileURL(schemaPath).href;
 
 const jsonSettings = {
   validate: { enable: true },
@@ -82,4 +88,7 @@ const fromServer = makeParser((msg) => {
 
 process.stdin.on('data', fromClient);
 server.stdout.on('data', fromServer);
-server.on('exit', (c) => process.exit(c ?? 0));
+server.on('error', (err) => { console.error(`lsp-launch: failed to spawn ${serverEntry}: ${err.message}`); process.exit(1); });
+// Exit on 'close' (fires after stdio has fully drained), not 'exit', so the last forwarded
+// message is not truncated.
+server.on('close', (c) => process.exit(c ?? 0));

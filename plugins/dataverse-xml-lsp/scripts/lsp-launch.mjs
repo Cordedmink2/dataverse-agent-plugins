@@ -12,16 +12,19 @@
 //
 // Usage: node lsp-launch.mjs <pluginRoot> [--stdio]
 import { spawn } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const pluginRoot = process.argv[2];
 if (!pluginRoot) throw new Error('lsp-launch: missing plugin root argument');
 
-// Schema version is pinned in versions.json (same source Get-Schemas.ps1 extracts to).
+// Schema version is pinned in versions.json (same source Get-Schemas.ps1 extracts to). Fail loud
+// if the schema dir is missing (e.g. a bad version bump or partial fetch): lemminx would otherwise
+// launch and silently validate nothing.
 const version = JSON.parse(readFileSync(join(pluginRoot, 'versions.json'), 'utf8')).schemaVersion;
 const schemaDir = join(pluginRoot, 'schemas', version);
+if (!existsSync(schemaDir)) throw new Error(`lsp-launch: schema dir not found: ${schemaDir}. Run scripts/Get-Schemas.ps1.`);
 
 // lemminx ships under a per-OS binary name (lemminx-win32.exe, lemminx-linux-x86_64,
 // lemminx-osx-aarch_64, ...). Get-Lemminx.ps1 installs exactly one; discover it the same way
@@ -41,6 +44,11 @@ const assoc = {
   '**/*.fetchxml': 'Fetch.xsd',
   '**/isv.config.xml': 'isv.config.xsd',
 };
+// Every XSD an association points at must exist - a partial extraction would otherwise leave
+// lemminx unable to load a schema with no visible error.
+const missingXsds = [...new Set(Object.values(assoc))].filter((xsd) => !existsSync(join(schemaDir, xsd)));
+if (missingXsds.length) throw new Error(`lsp-launch: missing XSD(s) in ${schemaDir}: ${missingXsds.join(', ')}. Run scripts/Get-Schemas.ps1.`);
+
 const xmlSettings = {
   validation: { enabled: true, schema: { enabled: 'always' } },
   fileAssociations: Object.entries(assoc).map(([pattern, xsd]) => ({
@@ -100,4 +108,7 @@ const fromServer = makeParser((msg) => {
 
 process.stdin.on('data', fromClient);
 server.stdout.on('data', fromServer);
-server.on('exit', (c) => process.exit(c ?? 0));
+server.on('error', (err) => { console.error(`lsp-launch: failed to spawn ${serverExe}: ${err.message}`); process.exit(1); });
+// Exit on 'close' (fires after stdio has fully drained), not 'exit', so the last forwarded
+// message is not truncated.
+server.on('close', (c) => process.exit(c ?? 0));

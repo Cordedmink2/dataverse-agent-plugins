@@ -37,6 +37,12 @@ else {
     $lemminxArgs = @{}
     if ($TargetPlatform) { $lemminxArgs.TargetPlatform = $TargetPlatform }
     & (Join-Path $PSScriptRoot 'Get-Lemminx.ps1') @lemminxArgs
+
+    # Claude Code launches the LSP through scripts/lsp-launch.mjs via node. Fail here (not at first
+    # use) if the shim's runtime is missing. Validator-only setups (-SkipLemminx) don't need node.
+    if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+        throw "node was not found on PATH. Claude Code launches the XML LSP via node; install Node.js and re-run (or use -SkipLemminx for validator-only setup)."
+    }
 }
 
 Write-Host "== 3/4 VS Code association (optional) ==" -ForegroundColor Cyan
