@@ -1,18 +1,13 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 — 2026-07-21
 
-- New plugin `power-automate-cloud-flow`: live schema validation of unpacked Power Automate
-  solution cloud-flow JSON (`Workflows/*.json`).
-  - Bundled draft-07 clientdata/WDL wrapper schema (structure only — connector `inputs` left
-    loose by design, since `OpenApiConnection` isn't in the public Logic Apps schema).
-  - Live `vscode-json-language-server` LSP diagnostics for Claude Code (and VS Code via
-    `json.schemas`); the server is `npm ci`-installed at setup, pinned in `package-lock.json`.
-  - One-shot `Install-Plugin.ps1` whose self-check drives the real LSP end-to-end
-    (`scripts/lsp-smoke.mjs`) and asserts the schema fires; `/power-automate-cloud-flow:setup`.
-  - Headless/CI structure checks via PowerShell's built-in `Test-Json` (no bespoke validator).
-  - Semantic linting (runAfter / connectionName resolution, hard-coded values) stays in the
-    `power-automate-flow-dev` skill; this plugin is the shape layer.
+### Changed (breaking)
+- Renamed plugins: `dataverse-customization-xml` → `dataverse-xml-lsp`, `power-automate-cloud-flow` → `cloud-flow-json-lsp`. Reinstall under the new id and update your `enabledPlugins` key.
+- Each plugin is now an LSP server plus a single manually-run, no-description setup skill (`/<plugin>:<plugin>-setup`). The auto-triggering skill and the `/<plugin>:setup` slash command are removed — editing guidance no longer surfaces automatically; it lives in `docs/guide.md`.
+- LSP schema path is resolved at launch (launcher shim), so setup no longer stamps `.lsp.json` and need not be re-run after `/plugin update`.
+
+The `dataverse-xml-lsp` plugin keeps `Validate-DataverseXml.ps1` for CI/headless and pac wrapper-file (forms/charts) validation; those wrapper files are validator-owned (not LSP-associated).
 
 ## 1.0.1 — 2026-07-16
 
