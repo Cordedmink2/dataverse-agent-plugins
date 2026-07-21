@@ -25,15 +25,15 @@
    Code handles that; a bare LSP client must too (see `scripts/lsp-smoke.mjs`).
 6. Subagents and headless runs NEVER get LSP pushes — that's by design; validate with `Test-Json`.
 
-## After `/plugin update power-automate-cloud-flow@dataverse-agent-plugins`
+## After `/plugin update cloud-flow-json-lsp@dataverse-agent-plugins`
 
 Setup stamps a machine-absolute schema path into the **tracked** `.lsp.json` inside the marketplace
 clone, so an update may conflict on that file or reset it to the committed relative path. Re-running
-`/power-automate-cloud-flow:setup` after every plugin update is the documented fix — it re-installs
+`/cloud-flow-json-lsp:cloud-flow-json-lsp-setup` after every plugin update is the documented fix — it re-installs
 the pinned server and re-stamps the path.
 
 Contributors working in a clone: the installer dirties `.lsp.json` — don't commit the machine path.
-`git update-index --skip-worktree plugins/power-automate-cloud-flow/.lsp.json` keeps it out of your
+`git update-index --skip-worktree plugins/cloud-flow-json-lsp/.lsp.json` keeps it out of your
 commits.
 
 ## No diagnostics in VS Code

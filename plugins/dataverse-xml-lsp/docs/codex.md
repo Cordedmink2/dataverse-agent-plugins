@@ -9,7 +9,7 @@ script after each edit.
 1. Clone the repo and run setup (no LSP needed, so skip the binary):
 
    ```
-   pwsh plugins/dataverse-customization-xml/scripts/Install-Plugin.ps1 -SkipLemminx
+   pwsh plugins/dataverse-xml-lsp/scripts/Install-Plugin.ps1 -SkipLemminx
    ```
 
    This fetches the Microsoft XSDs and runs a self-check; requires PowerShell 7+ (`pwsh`).
@@ -18,12 +18,12 @@ script after each edit.
 
    > When editing Dataverse customization XML (RibbonDiff.xml, SiteMap, FormXml,
    > Customizations.xml, FetchXML, charts), follow
-   > `<clone-path>/plugins/dataverse-customization-xml/SKILL.md`, and after EVERY edit run:
-   > `pwsh <clone-path>/plugins/dataverse-customization-xml/scripts/Validate-DataverseXml.ps1 <file>`
+   > `<clone-path>/plugins/dataverse-xml-lsp/SKILL.md`, and after EVERY edit run:
+   > `pwsh <clone-path>/plugins/dataverse-xml-lsp/scripts/Validate-DataverseXml.ps1 <file>`
    > Non-zero exit = the edit is invalid; fix before pack/import.
 
 3. If your Codex setup supports skill folders, point it at
-   `plugins/dataverse-customization-xml/` directly — SKILL.md has standard frontmatter.
+   `plugins/dataverse-xml-lsp/` directly — SKILL.md has standard frontmatter.
 
 ## The loop
 

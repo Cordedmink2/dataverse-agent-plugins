@@ -22,15 +22,15 @@
 5. Subagents and headless runs NEVER get LSP pushes — that's by design; they must run the
    validator script.
 
-## After `/plugin update dataverse-customization-xml@dataverse-agent-plugins`
+## After `/plugin update dataverse-xml-lsp@dataverse-agent-plugins`
 
 Setup stamps machine-absolute paths into the **tracked** `.lsp.json` inside the marketplace
 clone, so an update may conflict on that file or reset it to the committed relative paths.
-Re-running `/dataverse-customization-xml:setup` after every plugin update is the documented
+Re-running `/dataverse-xml-lsp:dataverse-xml-lsp-setup` after every plugin update is the documented
 fix — it re-stamps the paths and re-verifies the fetched assets.
 
 Contributors working in a clone of this repo: the installer dirties `.lsp.json` — don't
-commit the machine paths. `git update-index --skip-worktree plugins/dataverse-customization-xml/.lsp.json`
+commit the machine paths. `git update-index --skip-worktree plugins/dataverse-xml-lsp/.lsp.json`
 is one way to keep it out of your commits.
 
 ## No diagnostics in VS Code

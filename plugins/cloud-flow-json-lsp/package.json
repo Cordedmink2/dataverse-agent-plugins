@@ -1,5 +1,5 @@
 {
-  "name": "power-automate-cloud-flow-lsp",
+  "name": "cloud-flow-json-lsp",
   "version": "1.0.0",
   "private": true,
   "description": "Pins the JSON language server used for live diagnostics on Power Automate cloud-flow JSON.",

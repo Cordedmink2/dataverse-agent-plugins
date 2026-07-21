@@ -10,7 +10,7 @@ ships only Windows PowerShell 5.1.
 2. Run:
 
    ```
-   pwsh plugins/power-automate-cloud-flow/scripts/Install-Plugin.ps1 -UpdateVSCode
+   pwsh plugins/cloud-flow-json-lsp/scripts/Install-Plugin.ps1 -UpdateVSCode
    ```
 
    This installs the pinned JSON language server (used by the Claude Code path; VS Code uses its
@@ -23,7 +23,7 @@ ships only Windows PowerShell 5.1.
 For headless/CI structure checks (no editor), use PowerShell's built-in `Test-Json`:
 
 ```
-Get-Content <flow>.json -Raw | Test-Json -SchemaFile plugins/power-automate-cloud-flow/schemas/cloud-flow-clientdata.schema.json
+Get-Content <flow>.json -Raw | Test-Json -SchemaFile plugins/cloud-flow-json-lsp/schemas/cloud-flow-clientdata.schema.json
 ```
 
 ## Settings-update notes

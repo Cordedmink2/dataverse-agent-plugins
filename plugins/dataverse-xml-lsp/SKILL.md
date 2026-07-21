@@ -1,5 +1,5 @@
 ---
-name: dataverse-customization-xml
+name: dataverse-xml-lsp
 description: >-
   Hand-edit Dataverse / model-driven-app customization XML against the official Microsoft XSDs,
   with schema validation before pack/import. Use whenever editing a pac-unpacked solution's
@@ -15,7 +15,7 @@ description: >-
 Edit Dataverse customization XML so malformed edits **fail loud before `pac solution import`**,
 not silently at import time. Two validation layers share the same official Microsoft XSD set
 (`schemas/9.0.0.2090/`, fetched at setup — if the validator exits 2 with "Schema directory not
-found", run `/dataverse-customization-xml:setup` or `pwsh scripts/Install-Plugin.ps1`):
+found", run `/dataverse-xml-lsp:dataverse-xml-lsp-setup` or `pwsh scripts/Install-Plugin.ps1`):
 
 1. **`scripts/Validate-DataverseXml.ps1`** — the backbone. Run it after every edit and before
    pack/import. Tool-agnostic (any shell, CI, Codex). No Java, no network.
@@ -131,7 +131,7 @@ pack/import mechanics.
   validation. If it packs, the solution is structurally sound for import.
 - **`${CLAUDE_PLUGIN_ROOT}` is not substituted** inside `.lsp.json` `initializationOptions`/
   `settings` — only in `command`/`args`. Schema `systemId`s there use absolute paths. On a new
-  machine (or after a plugin update), run `/dataverse-customization-xml:setup` — or
+  machine (or after a plugin update), run `/dataverse-xml-lsp:dataverse-xml-lsp-setup` — or
   `scripts/Set-LspSchemaPaths.ps1` alone — to re-stamp them (and VS Code settings).
 - lemminx validates a document only inside a real workspace and after answering its
   `workspace/configuration` pull — Claude Code and VS Code both handle that; a bare LSP client

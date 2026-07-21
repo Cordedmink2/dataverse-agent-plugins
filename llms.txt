@@ -1,7 +1,7 @@
 # dataverse-agent-plugins
 
 > Claude Code plugin marketplace for Microsoft Dataverse development. Its founding plugin,
-> dataverse-customization-xml, validates hand-edited Dataverse customization XML (ribbon,
+> dataverse-xml-lsp, validates hand-edited Dataverse customization XML (ribbon,
 > sitemap, forms, FetchXML, charts, ISV config) against the official Microsoft XSDs via a
 > standalone PowerShell 7 validator and lemminx LSP diagnostics. XSDs and the lemminx binary
 > are fetched at setup, not committed. Install in Claude Code:
@@ -9,24 +9,24 @@
 
 ## Docs
 
-### dataverse-customization-xml
+### dataverse-xml-lsp
 
 - [Repo README](README.md): marketplace overview, install, requirements
-- [Plugin README](plugins/dataverse-customization-xml/README.md): full setup for every consumer type
-- [SKILL.md](plugins/dataverse-customization-xml/SKILL.md): the agent skill — validation workflow, root-element→schema table, ribbon-button recipe, gotchas
-- [Codex guide](plugins/dataverse-customization-xml/docs/codex.md): using the validator loop from non-Claude agents
-- [VS Code guide](plugins/dataverse-customization-xml/docs/vscode.md): editor-only setup, CI usage
-- [Debugging](plugins/dataverse-customization-xml/docs/debugging.md): setup failures, missing diagnostics, false positives
-- [Schema source](plugins/dataverse-customization-xml/schemas/SOURCE.md): where the Microsoft XSDs come from, refresh procedure
+- [Plugin README](plugins/dataverse-xml-lsp/README.md): full setup for every consumer type
+- [SKILL.md](plugins/dataverse-xml-lsp/SKILL.md): the agent skill — validation workflow, root-element→schema table, ribbon-button recipe, gotchas
+- [Codex guide](plugins/dataverse-xml-lsp/docs/codex.md): using the validator loop from non-Claude agents
+- [VS Code guide](plugins/dataverse-xml-lsp/docs/vscode.md): editor-only setup, CI usage
+- [Debugging](plugins/dataverse-xml-lsp/docs/debugging.md): setup failures, missing diagnostics, false positives
+- [Schema source](plugins/dataverse-xml-lsp/schemas/SOURCE.md): where the Microsoft XSDs come from, refresh procedure
 
-### power-automate-cloud-flow
+### cloud-flow-json-lsp
 
-- [Plugin README](plugins/power-automate-cloud-flow/README.md): install + setup for every consumer type
-- [SKILL.md](plugins/power-automate-cloud-flow/SKILL.md): the shape-vs-semantics split, what attaches, gotchas
-- [Codex guide](plugins/power-automate-cloud-flow/docs/codex.md): the `Test-Json` validation loop from non-Claude agents
-- [VS Code guide](plugins/power-automate-cloud-flow/docs/vscode.md): editor-only setup, CI usage
-- [Debugging](plugins/power-automate-cloud-flow/docs/debugging.md): setup failures, missing diagnostics
-- [Schema source](plugins/power-automate-cloud-flow/schemas/SOURCE.md): what the wrapper schema validates and why
+- [Plugin README](plugins/cloud-flow-json-lsp/README.md): install + setup for every consumer type
+- [SKILL.md](plugins/cloud-flow-json-lsp/SKILL.md): the shape-vs-semantics split, what attaches, gotchas
+- [Codex guide](plugins/cloud-flow-json-lsp/docs/codex.md): the `Test-Json` validation loop from non-Claude agents
+- [VS Code guide](plugins/cloud-flow-json-lsp/docs/vscode.md): editor-only setup, CI usage
+- [Debugging](plugins/cloud-flow-json-lsp/docs/debugging.md): setup failures, missing diagnostics
+- [Schema source](plugins/cloud-flow-json-lsp/schemas/SOURCE.md): what the wrapper schema validates and why
 
 ## Optional
 

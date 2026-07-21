@@ -9,7 +9,7 @@ scripts have `#requires -Version 7`.
 2. Run:
 
    ```
-   pwsh plugins/dataverse-customization-xml/scripts/Install-Plugin.ps1 -UpdateVSCode
+   pwsh plugins/dataverse-xml-lsp/scripts/Install-Plugin.ps1 -UpdateVSCode
    ```
 
    This fetches the Microsoft XSDs and writes `xml.fileAssociations` (absolute paths) into
@@ -25,7 +25,7 @@ scripts have `#requires -Version 7`.
 The standalone validator also works as a plain CLI for pre-commit hooks or CI:
 
 ```
-pwsh plugins/dataverse-customization-xml/scripts/Validate-DataverseXml.ps1 <files-or-globs>
+pwsh plugins/dataverse-xml-lsp/scripts/Validate-DataverseXml.ps1 <files-or-globs>
 ```
 
 ## Settings-update notes

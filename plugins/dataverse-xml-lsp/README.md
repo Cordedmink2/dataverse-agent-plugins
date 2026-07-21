@@ -1,4 +1,4 @@
-# dataverse-customization-xml
+# dataverse-xml-lsp
 
 A Claude Code plugin for **schema-validated hand-editing of Dataverse / model-driven-app
 customization XML** — ribbon buttons (`RibbonDiffXml`), app navigation (`SiteMap`), forms
@@ -16,8 +16,8 @@ customization XML** — ribbon buttons (`RibbonDiffXml`), app navigation (`SiteM
 
 ```
 /plugin marketplace add Cordedmink2/dataverse-agent-plugins
-/plugin install dataverse-customization-xml@dataverse-agent-plugins
-/dataverse-customization-xml:setup
+/plugin install dataverse-xml-lsp@dataverse-agent-plugins
+/dataverse-xml-lsp:dataverse-xml-lsp-setup
 ```
 
 The setup command fetches the Microsoft XSDs and the lemminx binary, stamps this machine's
@@ -46,7 +46,6 @@ can leave a running lemminx pointing at broken relative schema paths.
 | Path | Purpose |
 |------|---------|
 | `SKILL.md` | The skill: workflow, root→schema table, ribbon-button recipe, gotchas |
-| `commands/setup.md` | The `/dataverse-customization-xml:setup` slash command |
 | `scripts/Install-Plugin.ps1` | One-shot setup: schemas + lemminx + path stamping + self-check |
 | `scripts/Validate-DataverseXml.ps1` | Standalone validator — root-element → XSD, line/col errors, non-zero exit |
 | `scripts/Get-Schemas.ps1` | Download the official Microsoft XSDs into `schemas/<version>/` |
@@ -66,8 +65,8 @@ platform-specific.
 
 ```
 /plugin marketplace update dataverse-agent-plugins
-/plugin update dataverse-customization-xml@dataverse-agent-plugins
-/dataverse-customization-xml:setup
+/plugin update dataverse-xml-lsp@dataverse-agent-plugins
+/dataverse-xml-lsp:dataverse-xml-lsp-setup
 ```
 
 Re-run setup after every update — it re-stamps paths and re-checks the fetched assets (see

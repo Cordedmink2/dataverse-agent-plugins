@@ -1,4 +1,4 @@
-# power-automate-cloud-flow
+# cloud-flow-json-lsp
 
 A Claude Code plugin for **live schema validation of unpacked Power Automate solution cloud-flow
 JSON** — the `Workflows/<name>-<guid>.json` files `pac solution unpack` produces (the flow
@@ -23,8 +23,8 @@ the LSP loads.
 
 ```
 /plugin marketplace add Cordedmink2/dataverse-agent-plugins
-/plugin install power-automate-cloud-flow@dataverse-agent-plugins
-/power-automate-cloud-flow:setup
+/plugin install cloud-flow-json-lsp@dataverse-agent-plugins
+/cloud-flow-json-lsp:cloud-flow-json-lsp-setup
 ```
 
 The setup command installs the pinned JSON language server (`npm ci`), stamps this machine's
@@ -50,7 +50,6 @@ can leave a running server pointing at a broken relative schema path.
 | Path | Purpose |
 |------|---------|
 | `SKILL.md` | The skill: the shape-vs-semantics split, what attaches, gotchas |
-| `commands/setup.md` | The `/power-automate-cloud-flow:setup` slash command |
 | `scripts/Install-Plugin.ps1` | One-shot setup: server install + path stamping + self-check |
 | `scripts/Install-JsonLanguageServer.ps1` | `npm ci` the pinned JSON language server into `node_modules/` |
 | `scripts/Set-LspSchemaPaths.ps1` | Stamp this machine's absolute schema `file://` URI into `.lsp.json` (+ VS Code) |
@@ -69,8 +68,8 @@ hand-maintained and committed.
 
 ```
 /plugin marketplace update dataverse-agent-plugins
-/plugin update power-automate-cloud-flow@dataverse-agent-plugins
-/power-automate-cloud-flow:setup
+/plugin update cloud-flow-json-lsp@dataverse-agent-plugins
+/cloud-flow-json-lsp:cloud-flow-json-lsp-setup
 ```
 
 Re-run setup after every update — it re-installs the pinned server and re-stamps the schema path (see

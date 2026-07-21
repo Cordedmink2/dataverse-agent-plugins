@@ -1,5 +1,5 @@
 ---
-name: power-automate-cloud-flow
+name: cloud-flow-json-lsp
 description: >-
   Live schema validation of unpacked Power Automate solution cloud-flow JSON while you hand-edit it.
   Use when editing a pac-unpacked solution's Workflows/*.json (the flow clientdata: WDL definition +
@@ -32,7 +32,7 @@ is well-formed but will import Off / route to the wrong place." Run both before 
 The JSON language server is a Node package fetched via npm; it is not committed. Run:
 
 ```
-/power-automate-cloud-flow:setup
+/cloud-flow-json-lsp:cloud-flow-json-lsp-setup
 ```
 
 or directly `pwsh "${CLAUDE_PLUGIN_ROOT}/scripts/Install-Plugin.ps1"`. That installs the pinned server
@@ -69,7 +69,7 @@ Get-Content <flow>.json -Raw | Test-Json -SchemaFile "${CLAUDE_PLUGIN_ROOT}/sche
   `pac solution check` / a successful import remains the authoritative gate.
 - **`${CLAUDE_PLUGIN_ROOT}` is not substituted** inside `.lsp.json` `initializationOptions`/`settings`
   — only in `command`/`args`. The schema `url` there is an absolute `file://` URI. On a new machine
-  (or after a plugin update / move), re-run `/power-automate-cloud-flow:setup` — or
+  (or after a plugin update / move), re-run `/cloud-flow-json-lsp:cloud-flow-json-lsp-setup` — or
   `scripts/Set-LspSchemaPaths.ps1` alone — to re-stamp it.
 - **The JSON server validates a document only after answering its `workspace/configuration` pull.**
   Claude Code and VS Code both handle that; a bare LSP client must too (see `scripts/lsp-smoke.mjs`
