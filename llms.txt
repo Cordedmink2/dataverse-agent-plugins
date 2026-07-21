@@ -30,5 +30,5 @@
 
 ## Optional
 
-- [Design spec](docs/specs/2026-07-15-dataverse-agent-plugins-repo-design.md): why the repo is shaped this way
+- [Design spec](docs/superpowers/specs/2026-07-15-dataverse-agent-plugins-repo-design.md): why the repo is shaped this way
 - [Changelog](CHANGELOG.md)

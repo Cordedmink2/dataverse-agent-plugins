@@ -56,7 +56,7 @@ path stamping to repeat on update, and no loss of the XML validator's unique cap
   (hosted schema URL)** instead (§4). Exactly one mechanism ships.
 - **Guidance:** moved into a new `docs/guide.md` per plugin (not README, not deleted).
 - **Setup slash command:** removed; the tiny skill is the sole setup entry point.
-- **Old design specs under `docs/specs/`:** old names updated throughout.
+- **Old design specs under `docs/superpowers/specs/`:** old names updated throughout.
 - **Execution/versioning:** clean rename via `git mv` (preserve history), bump both to `2.0.0`,
   CHANGELOG documents the breaking rename + restructure, work on a new branch off `main`.
 
@@ -93,7 +93,7 @@ plugins/dataverse-xml-lsp/                 plugins/cloud-flow-json-lsp/
 Reference rewrites (from the full pre-work inventory): `.claude-plugin/marketplace.json` (`name` +
 `source` + LSP-first `description`), each `plugin.json` `description`, `.github/workflows/ci.yml`
 (all `plugins/<old>/…` paths + cache keys), root `README.md`, `llms.txt`, `CHANGELOG.md` (new top
-entry only), both `docs/specs/*.md` (old names updated throughout), and each plugin's `README.md` +
+entry only), both `docs/superpowers/specs/*.md` (old names updated throughout), and each plugin's `README.md` +
 `docs/{codex,vscode,debugging}.md`. `.lsp.json` config keys (`"xml"`/`"json"`) and test fixtures are
 untouched by the rename.
 
