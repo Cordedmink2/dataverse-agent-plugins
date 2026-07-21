@@ -1,21 +1,21 @@
 #requires -Version 7
 <#
-    Locks the setup skill's no-auto-trigger behavior. The root SKILL.md must:
+    Locks the setup skill's frontmatter. It must:
+      - live at skills/dataverse-xml-lsp-setup/SKILL.md,
       - parse (have a YAML frontmatter block between the first two --- lines),
       - carry name: dataverse-xml-lsp-setup,
-      - carry NO description: key (a description would let Claude auto-invoke the skill; setup is
-        run once by hand, never triggered from context).
+      - carry disable-model-invocation: true (setup is a one-time manual action; it must not
+        auto-trigger and compete with the usage skill during editing).
 #>
 
 Describe 'setup skill frontmatter (dataverse-xml-lsp)' {
 
     BeforeAll {
         $pluginRoot = Split-Path $PSScriptRoot -Parent
-        $script:skillPath = Join-Path $pluginRoot 'SKILL.md'
+        $script:skillPath = Join-Path $pluginRoot 'skills' 'dataverse-xml-lsp-setup' 'SKILL.md'
         $script:lines = Get-Content $script:skillPath
 
-        # Parse the YAML frontmatter: the block between the first two --- lines. Fail loud if the
-        # file has no such block (a bare key/value list is all these skills carry).
+        # Parse the YAML frontmatter: the block between the first two --- lines.
         $fence = @()
         for ($i = 0; $i -lt $script:lines.Count; $i++) {
             if ($script:lines[$i].Trim() -eq '---') { $fence += $i }
@@ -32,6 +32,10 @@ Describe 'setup skill frontmatter (dataverse-xml-lsp)' {
         $script:fenceCount = $fence.Count
     }
 
+    It 'SKILL.md exists at the relocated path' {
+        Test-Path $script:skillPath | Should -BeTrue
+    }
+
     It 'has a parseable YAML frontmatter block' {
         $fenceCount | Should -Be 2 -Because 'SKILL.md must open with a --- ... --- frontmatter block'
     }
@@ -40,7 +44,7 @@ Describe 'setup skill frontmatter (dataverse-xml-lsp)' {
         $frontmatter['name'] | Should -Be 'dataverse-xml-lsp-setup'
     }
 
-    It 'has NO description key (no auto-trigger)' {
-        $frontmatter.ContainsKey('description') | Should -BeFalse -Because 'a description would let the skill auto-trigger; setup is run by hand'
+    It 'disables model invocation (no auto-trigger)' {
+        $frontmatter['disable-model-invocation'] | Should -Be 'true' -Because 'setup is a one-time manual action; it must not auto-trigger'
     }
 }

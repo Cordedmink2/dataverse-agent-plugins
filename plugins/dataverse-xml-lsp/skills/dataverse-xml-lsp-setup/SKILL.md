@@ -1,5 +1,6 @@
 ---
 name: dataverse-xml-lsp-setup
+disable-model-invocation: true
 ---
 
 # dataverse-xml-lsp setup
