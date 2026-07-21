@@ -24,8 +24,8 @@ unknown roots.
 
 - **Headless / subagent / CI edits** — the lemminx LSP only pushes diagnostics in the main
   interactive session; elsewhere you get nothing unless you run this.
-- **Forms, charts, viewers, parameter XML, and whole `Customizations.xml`** — the LSP does not cover
-  these live; the validator owns them. (A PostToolUse hook also auto-runs it on these files.)
+- **Forms, charts, viewers, and parameter XML** — the LSP does not cover these live; the validator
+  owns them, and a PostToolUse hook auto-runs it on them after an edit.
 - **Before `pac solution pack` / `import`** — a final gate so bad edits fail here, not at import.
 
 ## How to read the output
