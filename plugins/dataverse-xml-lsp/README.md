@@ -47,7 +47,7 @@ can leave a running lemminx pointing at broken relative schema paths.
 
 | Path | Purpose |
 |------|---------|
-| `SKILL.md` | The skill: workflow, root→schema table, ribbon-button recipe, gotchas |
+| `SKILL.md` | Tiny no-description setup skill (runs `Install-Plugin.ps1`) |
 | `scripts/Install-Plugin.ps1` | One-shot setup: schemas + lemminx + path stamping + self-check |
 | `scripts/Validate-DataverseXml.ps1` | Standalone validator — root-element → XSD, line/col errors, non-zero exit |
 | `scripts/Get-Schemas.ps1` | Download the official Microsoft XSDs into `schemas/<version>/` |
@@ -99,4 +99,4 @@ The plugin is MIT-licensed (see the repo root `LICENSE`). The Microsoft XSDs are
 from Microsoft at setup time and remain subject to Microsoft's terms — they are not
 redistributed in this repo.
 
-See `SKILL.md` for the ribbon-button recipe and the full edit → validate → pack → import loop.
+See [`docs/guide.md`](docs/guide.md) for the ribbon-button recipe and the full edit → validate → pack → import loop.

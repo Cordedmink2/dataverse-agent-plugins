@@ -9,7 +9,7 @@ editor diagnostics *before* `pac solution import`.
 
 This is the **shape** layer. Cross-node semantics (`runAfter` targets a real sibling, `connectionName`
 resolves, hard-coded env values) and the export/pack/import round-trip live in the
-`power-automate-flow-dev` skill. See `SKILL.md` for the split.
+`power-automate-flow-dev` skill. See [`docs/guide.md`](docs/guide.md) for the split.
 
 ## The validation layer
 
@@ -51,7 +51,7 @@ can leave a running server pointing at a broken relative schema path.
 
 | Path | Purpose |
 |------|---------|
-| `SKILL.md` | The skill: the shape-vs-semantics split, what attaches, gotchas |
+| `SKILL.md` | Tiny no-description setup skill (runs `Install-Plugin.ps1`) |
 | `scripts/Install-Plugin.ps1` | One-shot setup: server install + path stamping + self-check |
 | `scripts/Install-JsonLanguageServer.ps1` | `npm ci` the pinned JSON language server into `node_modules/` |
 | `scripts/Set-LspSchemaPaths.ps1` | Stamp this machine's absolute schema `file://` URI into `.lsp.json` (+ VS Code) |
@@ -99,5 +99,5 @@ Something not working? [`docs/debugging.md`](docs/debugging.md).
 MIT (see the repo root `LICENSE`). The bundled schema is original to this repo. The JSON language
 server is installed from npm at setup and remains under its own license.
 
-See `SKILL.md` for the shape-vs-semantics layering and how this plugin pairs with the
-`power-automate-flow-dev` skill.
+See [`docs/guide.md`](docs/guide.md) for the shape-vs-semantics layering and how this plugin pairs
+with the `power-automate-flow-dev` skill.
