@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-07-22
+
+### dataverse-xml-lsp 2.2.0
+
+- Validate pac's `<savedqueries>` wrapper root (exported `SavedQueries/*.xml`) by extracting and
+  checking each inner `<savedquery>` against `Fetch.xsd` — indicative, like forms. Previously every
+  exported saved-query file failed as an unknown root.
+- Validate the model-driven-app `<AppModuleSiteMap>` root by extracting its inner `<SiteMap>` and
+  checking it against `SiteMap.xsd` — authoritative.
+- Both new roots are covered by the PostToolUse hook. Removed the stale live
+  `**/SavedQueries/**/*.xml → Fetch.xsd` association, which mis-fired on the `<savedqueries>` root.
+
+### cloud-flow-json-lsp 2.1.0
+
+- The clientdata schema now validates actions nested inside `Scope`/`If`/`Foreach`/`Switch`
+  recursively, so a bogus `runAfter` status or a missing `type` on a nested action is caught instead
+  of passing silently. Top-level behaviour is unchanged.
+
 ## 2.1.0 — 2026-07-21
 
 ### dataverse-xml-lsp
