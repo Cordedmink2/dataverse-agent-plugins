@@ -17,6 +17,7 @@ Describe 'wrapper hook gate (validate-wrapper.mjs)' {
             @{ Root = 'viewers';         File = 'viewers.xml' }
             @{ Root = 'importexportxml'; File = 'parameterxml.xml' }
             @{ Root = 'savedqueries';    File = 'savedqueries-wrapper.xml' }
+            @{ Root = 'AppModuleSiteMap'; File = 'appmodulesitemap-wrapper.xml' }
         )
     }
 

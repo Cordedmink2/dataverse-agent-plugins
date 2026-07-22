@@ -32,6 +32,7 @@ It picks the schema by the file's **root element**:
 |---------------------|-------------------------------|-------|
 | `RibbonDiffXml`     | `RibbonCore.xsd`              | Per-entity `RibbonDiff.xml` or app ribbon — **authoritative** |
 | `SiteMap`           | `SiteMap.xsd`                 | App navigation — authoritative |
+| `AppModuleSiteMap`  | `SiteMap.xsd`                 | Model-driven-app sitemap; wrapper → inner `SiteMap` validated — authoritative |
 | `form` / `forms`    | `FormXml.xsd`                 | Forms; pac's `<forms>` wrapper → each inner `systemform/form` validated — indicative (schema lags modern form attrs) |
 | `fetch`             | `Fetch.xsd`                   | FetchXML queries (`.fetchxml` files, query fragments) — authoritative |
 | `savedquery` / `savedqueries` | `Fetch.xsd`             | pac `SavedQueries/*.xml`; `<savedqueries>` wrapper → each inner `savedquery` validated — indicative (schema lags `layoutxml`/`LocalizedNames`) |

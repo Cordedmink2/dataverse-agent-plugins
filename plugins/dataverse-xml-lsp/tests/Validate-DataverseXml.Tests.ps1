@@ -6,12 +6,13 @@ BeforeDiscovery {
         'ribbon.xml', 'sitemap.xml', 'form.xml', 'forms-wrapper.xml', 'fetch.xml',
         'savedquery.xml', 'savedqueries-wrapper.xml', 'datadefinition.xml',
         'visualization-wrapper.xml', 'visualization-escaped.xml', 'isvconfig.xml',
-        'parameterxml.xml', 'viewers.xml', 'importexport.xml'
+        'parameterxml.xml', 'viewers.xml', 'importexport.xml', 'appmodulesitemap-wrapper.xml'
     )
     $script:invalidFixtures = @(
         'ribbon.xml', 'sitemap.xml', 'form.xml', 'forms-wrapper.xml', 'fetch.xml',
         'savedquery.xml', 'savedqueries-wrapper.xml', 'datadefinition.xml',
-        'isvconfig.xml', 'parameterxml.xml', 'viewers.xml', 'importexport.xml'
+        'isvconfig.xml', 'parameterxml.xml', 'viewers.xml', 'importexport.xml',
+        'appmodulesitemap-wrapper.xml'
     )
 }
 
