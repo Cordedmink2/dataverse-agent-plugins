@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 // (ParameterXml) is distinct from 'ImportExportXml' (customizations.xml, which the LSP owns).
 const OWNED_ROOTS = new Set([
   'form', 'forms', 'datadefinition', 'visualization', 'viewers', 'importexportxml',
+  'savedqueries',
 ]);
 
 function rootElement(file) {
