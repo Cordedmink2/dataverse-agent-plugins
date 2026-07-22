@@ -13,7 +13,7 @@ It is one layer of a two-layer story — do not confuse them:
 
 | Layer | What it checks | Where |
 |-------|----------------|-------|
-| **Shape (this plugin)** | JSON well-formedness + the clientdata/WDL wrapper structure: `properties.definition` present, `definition` has `$schema`/`triggers`/`actions`, `runAfter` statuses are the WDL enum. Live, in-editor. | `schemas/cloud-flow-clientdata.schema.json` via `vscode-json-language-server` (`.lsp.json`) |
+| **Shape (this plugin)** | JSON well-formedness + the clientdata/WDL wrapper structure: `properties.definition` present, `definition` has `$schema`/`triggers`/`actions`, `runAfter` statuses are the WDL enum, validated recursively through Scope/If/Foreach/Switch. Live, in-editor. | `schemas/cloud-flow-clientdata.schema.json` via `vscode-json-language-server` (`.lsp.json`) |
 | **Semantics (the `power-automate-flow-dev` skill)** | Cross-node rules JSON Schema *cannot* express: `runAfter` naming a real sibling, `connectionName` resolving to a declared connection reference, child-invoker connections, hard-coded environment values, condition rows. Plus the export → unpack → edit → pack → import → verify round-trip. | that skill's `flow-lint.ps1` |
 
 **Rule of thumb:** the LSP catches "this isn't a well-formed flow file." `flow-lint.ps1` catches "this

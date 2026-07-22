@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0.0",
+  "properties": {
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "triggers": { "Recurrence": { "type": "Recurrence" } },
+      "actions": {
+        "For_each_item": {
+          "type": "Foreach",
+          "foreach": "@triggerOutputs()",
+          "runAfter": {},
+          "actions": {
+            "Set_inner": {
+              "type": "SetVariable",
+              "inputs": { "name": "v", "value": "x" },
+              "runAfter": { "Prev": ["TotallyBogusStatus"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}
