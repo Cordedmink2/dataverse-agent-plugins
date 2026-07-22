@@ -40,6 +40,8 @@ Describe 'XML LSP is not associated to validator-owned wrapper roots' {
 
         # Representative pac-unpacked wrapper file paths (root <forms> / <visualization>).
         $script:formsWrapper = 'src/Entities/account/FormXml/main/00000000-0000-0000-0000-000000000000.xml'
+        $script:savedQueryWrapper = 'src/Entities/account/SavedQueries/00000000-0000-0000-0000-000000000000.xml'
+        $script:appModuleSiteMap = 'src/AppModuleSiteMaps/test_app/AppModuleSiteMap.xml'
     }
 
     It 'parses a non-empty association map from the shim' {
@@ -57,6 +59,22 @@ Describe 'XML LSP is not associated to validator-owned wrapper roots' {
             if (& $matcher $glob $formsWrapper) { $hit += "$glob -> $($assoc[$glob])" }
         }
         $hit | Should -BeNullOrEmpty -Because "no LSP association may match a pac <forms> wrapper file ($formsWrapper); lemminx would false-positive on the <forms> root. Matched: $($hit -join ', ')"
+    }
+
+    It 'does not associate pac SavedQueries wrapper files (validator-owned)' {
+        $hit = @()
+        foreach ($glob in $assoc.Keys) {
+            if (& $matcher $glob $savedQueryWrapper) { $hit += "$glob -> $($assoc[$glob])" }
+        }
+        $hit | Should -BeNullOrEmpty -Because "no LSP association may match a pac <savedqueries> wrapper file ($savedQueryWrapper); lemminx would false-positive on the <savedqueries> root. Matched: $($hit -join ', ')"
+    }
+
+    It 'does not associate pac AppModuleSiteMap wrapper files (validator-owned)' {
+        $hit = @()
+        foreach ($glob in $assoc.Keys) {
+            if (& $matcher $glob $appModuleSiteMap) { $hit += "$glob -> $($assoc[$glob])" }
+        }
+        $hit | Should -BeNullOrEmpty -Because "the SiteMap*.xml glob must not match a pac <AppModuleSiteMap> wrapper file ($appModuleSiteMap); lemminx would false-positive on the <AppModuleSiteMap> root. Matched: $($hit -join ', ')"
     }
 }
 
@@ -99,6 +117,8 @@ Describe 'VS Code association map is not associated to validator-owned wrapper r
         }
         $script:matcher = ${function:Test-GlobMatch}
         $script:formsWrapper = 'src/Entities/account/FormXml/main/00000000-0000-0000-0000-000000000000.xml'
+        $script:savedQueryWrapper = 'src/Entities/account/SavedQueries/00000000-0000-0000-0000-000000000000.xml'
+        $script:appModuleSiteMap = 'src/AppModuleSiteMaps/test_app/AppModuleSiteMap.xml'
     }
 
     It 'parses a non-empty association map from Set-LspSchemaPaths.ps1' {
@@ -115,5 +135,21 @@ Describe 'VS Code association map is not associated to validator-owned wrapper r
             if (& $matcher $glob $formsWrapper) { $hit += "$glob -> $($vsAssoc[$glob])" }
         }
         $hit | Should -BeNullOrEmpty -Because "no VS Code association may match a pac <forms> wrapper file ($formsWrapper); the RedHat XML extension would false-positive on the <forms> root. Matched: $($hit -join ', ')"
+    }
+
+    It 'does not associate pac SavedQueries wrapper files (validator-owned)' {
+        $hit = @()
+        foreach ($glob in $vsAssoc.Keys) {
+            if (& $matcher $glob $savedQueryWrapper) { $hit += "$glob -> $($vsAssoc[$glob])" }
+        }
+        $hit | Should -BeNullOrEmpty -Because "no VS Code association may match a pac <savedqueries> wrapper file ($savedQueryWrapper); the RedHat XML extension would false-positive on the <savedqueries> root. Matched: $($hit -join ', ')"
+    }
+
+    It 'does not associate pac AppModuleSiteMap wrapper files (validator-owned)' {
+        $hit = @()
+        foreach ($glob in $vsAssoc.Keys) {
+            if (& $matcher $glob $appModuleSiteMap) { $hit += "$glob -> $($vsAssoc[$glob])" }
+        }
+        $hit | Should -BeNullOrEmpty -Because "the SiteMap*.xml glob must not match a pac <AppModuleSiteMap> wrapper file ($appModuleSiteMap); lemminx would false-positive on the <AppModuleSiteMap> root. Matched: $($hit -join ', ')"
     }
 }

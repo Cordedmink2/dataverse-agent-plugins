@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "dataverse-xml-lsp",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "LSP + CLI validator for Dataverse customization XML: live lemminx diagnostics and a standalone PowerShell validator checking ribbon, sitemap, forms, FetchXML, charts and more against the official XSDs.",
   "author": {
     "name": "Connor Parsons"

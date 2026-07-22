@@ -32,9 +32,10 @@ It picks the schema by the file's **root element**:
 |---------------------|-------------------------------|-------|
 | `RibbonDiffXml`     | `RibbonCore.xsd`              | Per-entity `RibbonDiff.xml` or app ribbon — **authoritative** |
 | `SiteMap`           | `SiteMap.xsd`                 | App navigation — authoritative |
+| `AppModuleSiteMap`  | `SiteMap.xsd`                 | Model-driven-app sitemap; wrapper → inner `SiteMap` validated — authoritative |
 | `form` / `forms`    | `FormXml.xsd`                 | Forms; pac's `<forms>` wrapper → each inner `systemform/form` validated — indicative (schema lags modern form attrs) |
 | `fetch`             | `Fetch.xsd`                   | FetchXML queries (`.fetchxml` files, query fragments) — authoritative |
-| `savedquery`        | `Fetch.xsd`                   | pac `SavedQueries/*.xml` — authoritative |
+| `savedquery` / `savedqueries` | `Fetch.xsd`             | pac `SavedQueries/*.xml`; `<savedqueries>` wrapper → each inner `savedquery` validated — indicative (schema lags `layoutxml`/`LocalizedNames`) |
 | `visualization` / `datadefinition` | `VisualizationDataDescription.xsd` | Charts; the `<visualization>` wrapper's inner `datadescription/datadefinition` is validated (escaped inner XML handled — see gotchas) |
 | `configuration`     | `isv.config.xsd`              | Legacy ISV config |
 | `importexportxml` (lowercase) | `ParameterXml.xsd`  | Configuration-migration parameter XML — note the case difference from `ImportExportXml` |
@@ -104,10 +105,11 @@ pack/import mechanics.
 
 ## Gotchas (learned building this)
 
-- **Whole-file `Customizations.xml` AND whole-form `FormXml` validation are indicative, not
-  authoritative.** The bundled schema is `9.0.0.2090`; modern Dataverse exports/forms include
-  newer attributes/elements it doesn't declare (`OrganizationVersion`, `CanvasApps`, empty
-  `AppModules`; on forms `headerdensity`, `contenttype`, `UClientRecordSourcesJSON`, …), so it
+- **Whole-file `Customizations.xml`, whole-form `FormXml`, AND saved-query validation are
+  indicative, not authoritative.** The bundled schema is `9.0.0.2090`; modern Dataverse
+  exports/forms include newer attributes/elements it doesn't declare (`OrganizationVersion`,
+  `CanvasApps`, empty `AppModules`; on forms `headerdensity`, `contenttype`,
+  `UClientRecordSourcesJSON`; on saved queries `layoutxml`, `LocalizedNames`, …), so it
   reports false "not declared" errors. Confirm your OWN edits are clean by checking no error
   references them (grep the output for your element/attribute names), and treat pre-existing OOB
   noise as expected. The **ribbon** fragment (`RibbonCore.xsd`) is stable and fully authoritative.

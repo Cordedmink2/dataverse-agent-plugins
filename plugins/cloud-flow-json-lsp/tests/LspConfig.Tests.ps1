@@ -66,4 +66,11 @@ Describe 'bundled schema distinguishes valid from invalid fixtures' {
         $files.Count | Should -BeGreaterThan 0
         foreach ($f in $files) { Test-Fixture $f.FullName | Should -BeFalse -Because "$($f.Name) should be rejected" }
     }
+
+    It 'rejects a bogus runAfter status on a nested action' {
+        # nested-bad-runafter-status.json puts the bad status on an action inside a Foreach;
+        # a non-recursive schema would miss it.
+        $bad = Join-Path $invalidDir 'nested-bad-runafter-status.json'
+        [bool](Get-Content $bad -Raw | Test-Json -SchemaFile $schema) | Should -BeFalse
+    }
 }

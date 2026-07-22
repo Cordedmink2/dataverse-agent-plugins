@@ -13,7 +13,9 @@
 
 - [Repo README](README.md): marketplace overview, install, requirements
 - [Plugin README](plugins/dataverse-xml-lsp/README.md): full setup for every consumer type
-- [SKILL.md](plugins/dataverse-xml-lsp/SKILL.md): the agent skill — validation workflow, root-element→schema table, ribbon-button recipe, gotchas
+- [validate skill](plugins/dataverse-xml-lsp/skills/dataverse-xml-validate/SKILL.md): when and how to run the validator
+- [setup skill](plugins/dataverse-xml-lsp/skills/dataverse-xml-lsp-setup/SKILL.md): one-time per-machine install
+- [guide.md](plugins/dataverse-xml-lsp/docs/guide.md): root-element→schema table (incl. savedqueries and AppModuleSiteMap wrapper roots), ribbon-button recipe, gotchas
 - [Codex guide](plugins/dataverse-xml-lsp/docs/codex.md): using the validator loop from non-Claude agents
 - [VS Code guide](plugins/dataverse-xml-lsp/docs/vscode.md): editor-only setup, CI usage
 - [Debugging](plugins/dataverse-xml-lsp/docs/debugging.md): setup failures, missing diagnostics, false positives
@@ -22,7 +24,8 @@
 ### cloud-flow-json-lsp
 
 - [Plugin README](plugins/cloud-flow-json-lsp/README.md): install + setup for every consumer type
-- [SKILL.md](plugins/cloud-flow-json-lsp/SKILL.md): the shape-vs-semantics split, what attaches, gotchas
+- [SKILL.md](plugins/cloud-flow-json-lsp/SKILL.md): one-time per-machine install
+- [guide.md](plugins/cloud-flow-json-lsp/docs/guide.md): the shape-vs-semantics split, what attaches, recursive nested-action validation, gotchas
 - [Codex guide](plugins/cloud-flow-json-lsp/docs/codex.md): the `Test-Json` validation loop from non-Claude agents
 - [VS Code guide](plugins/cloud-flow-json-lsp/docs/vscode.md): editor-only setup, CI usage
 - [Debugging](plugins/cloud-flow-json-lsp/docs/debugging.md): setup failures, missing diagnostics
@@ -30,5 +33,6 @@
 
 ## Optional
 
-- [Design spec](docs/superpowers/specs/2026-07-15-dataverse-agent-plugins-repo-design.md): why the repo is shaped this way
+- [Repo design spec](docs/superpowers/specs/2026-07-15-dataverse-agent-plugins-repo-design.md): why the repo is shaped this way
+- [Validator-gaps spec](docs/superpowers/specs/2026-07-22-validator-gaps-design.md): savedqueries + AppModuleSiteMap + nested-flow fixes and the roadmap behind them
 - [Changelog](CHANGELOG.md)

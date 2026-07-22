@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "cloud-flow-json-lsp",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "JSON LSP for unpacked Power Automate cloud-flow clientdata: live vscode-json-language-server diagnostics on solution Workflows/*.json against a bundled clientdata/WDL wrapper schema.",
   "author": {
     "name": "Connor Parsons"

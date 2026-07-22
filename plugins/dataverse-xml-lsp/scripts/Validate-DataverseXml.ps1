@@ -65,10 +65,12 @@ $rootToSchema['ImportExportXml'] = 'CustomizationsSolution.xsd'
 $rootToSchema['importexportxml'] = 'ParameterXml.xsd'
 $rootToSchema['RibbonDiffXml']   = 'RibbonCore.xsd'
 $rootToSchema['SiteMap']         = 'SiteMap.xsd'
+$rootToSchema['AppModuleSiteMap'] = 'SiteMap.xsd'
 $rootToSchema['form']            = 'FormXml.xsd'
 $rootToSchema['forms']           = 'FormXml.xsd'
 $rootToSchema['fetch']           = 'Fetch.xsd'
 $rootToSchema['savedquery']      = 'Fetch.xsd'
+$rootToSchema['savedqueries']    = 'Fetch.xsd'
 $rootToSchema['datadefinition']  = 'VisualizationDataDescription.xsd'
 $rootToSchema['visualization']   = 'VisualizationDataDescription.xsd'
 $rootToSchema['configuration']   = 'isv.config.xsd'
@@ -80,6 +82,8 @@ $rootToSchema['viewers']         = 'reports.config.xsd'
 $innerElementByRoot = [System.Collections.Generic.Dictionary[string, string]]::new()
 $innerElementByRoot['forms']         = 'systemform/form'
 $innerElementByRoot['visualization'] = 'datadescription/datadefinition'
+$innerElementByRoot['savedqueries']  = 'savedquery'
+$innerElementByRoot['AppModuleSiteMap'] = 'SiteMap'
 
 # Cache compiled schema sets by xsd filename so a batch of files loads each schema once.
 $schemaSetCache = @{}

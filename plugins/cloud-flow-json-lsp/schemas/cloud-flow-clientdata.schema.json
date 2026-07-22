@@ -69,28 +69,8 @@
             },
             "actions": {
               "type": "object",
-              "description": "The action graph. Order is expressed via runAfter, NOT array position. Each action has a `type` and usually `inputs` + `runAfter`.",
-              "additionalProperties": {
-                "type": "object",
-                "required": ["type"],
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "description": "e.g. OpenApiConnection, Compose, Scope, If, Foreach, InitializeVariable, SetVariable, Http, Response, Terminate, Switch."
-                  },
-                  "inputs": { "description": "Action inputs. Type varies by action — e.g. Compose/Set/Append inputs can be a string, number, array or object — so left untyped to avoid false positives." },
-                  "runAfter": {
-                    "type": "object",
-                    "description": "Map of upstream-action-name -> array of statuses to run after (Succeeded / Failed / Skipped / TimedOut). Empty {} = runs first.",
-                    "additionalProperties": {
-                      "type": "array",
-                      "items": { "enum": ["Succeeded", "Failed", "Skipped", "TimedOut"] }
-                    }
-                  },
-                  "runtimeConfiguration": { "type": "object", "additionalProperties": true }
-                },
-                "additionalProperties": true
-              }
+              "description": "The action graph. Order is expressed via runAfter, NOT array position. Nested actions (Scope/If/Foreach/Switch) are validated recursively.",
+              "additionalProperties": { "$ref": "#/definitions/action" }
             },
             "outputs": { "type": "object", "additionalProperties": true }
           }
@@ -98,5 +78,26 @@
       }
     },
     "schemaVersion": { "type": "string" }
+  },
+  "definitions": {
+    "action": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": true,
+      "properties": {
+        "type": { "type": "string", "description": "e.g. OpenApiConnection, Compose, Scope, If, Foreach, InitializeVariable, SetVariable, Http, Response, Terminate, Switch." },
+        "inputs": { "description": "Action inputs. Type varies by action, so left untyped to avoid false positives." },
+        "runAfter": {
+          "type": "object",
+          "description": "Map of upstream-action-name -> array of statuses to run after (Succeeded / Failed / Skipped / TimedOut). Empty {} = runs first.",
+          "additionalProperties": { "type": "array", "items": { "enum": ["Succeeded", "Failed", "Skipped", "TimedOut"] } }
+        },
+        "runtimeConfiguration": { "type": "object", "additionalProperties": true },
+        "actions": { "type": "object", "additionalProperties": { "$ref": "#/definitions/action" } },
+        "else": { "type": "object", "properties": { "actions": { "type": "object", "additionalProperties": { "$ref": "#/definitions/action" } } } },
+        "default": { "type": "object", "properties": { "actions": { "type": "object", "additionalProperties": { "$ref": "#/definitions/action" } } } },
+        "cases": { "type": "object", "additionalProperties": { "type": "object", "properties": { "actions": { "type": "object", "additionalProperties": { "$ref": "#/definitions/action" } } } } }
+      }
+    }
   }
 }
