@@ -40,9 +40,11 @@ Then install whichever plugin you need and run its one-time, per-machine setup (
 Microsoft XSDs / lemminx / JSON language server — nothing bulky is committed to the repo):
 
     /plugin install dataverse-xml-lsp@dataverse-agent-plugins
+    /reload-plugins
     /dataverse-xml-lsp:dataverse-xml-lsp-setup
 
     /plugin install cloud-flow-json-lsp@dataverse-agent-plugins
+    /reload-plugins
     /cloud-flow-json-lsp:cloud-flow-json-lsp-setup
 
 Run `/reload-plugins` afterwards. Update later with
